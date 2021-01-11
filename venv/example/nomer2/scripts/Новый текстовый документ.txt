@@ -1,0 +1,26 @@
+let currentLocation = window.location;
+let inputLink = document.querySelector('.link').value = currentLocation; 
+
+let input_rep = document.querySelector('.rep');
+let input_bot = document.querySelector('.bt');
+
+let alert1 = document.querySelector('alert');
+let alert2 = document.querySelector('alert2');
+
+
+let btn_rep = document.querySelector('.report').addEventListener('click' , (e) => {
+    input_rep.select();
+    document.execCommand("copy");
+    e.target.classList.add('al')
+    e.target.classList.remove('bt__tt');
+    e.target.textContent = 'Скопированно!'
+
+});
+
+let btn_bot = document.querySelector('.bot').addEventListener('click' , (e) => {
+    input_bot.select();
+    document.execCommand("copy");
+    e.target.classList.add('al')
+    e.target.textContent = 'Скопированно!'
+});
+

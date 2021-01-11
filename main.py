@@ -47,17 +47,28 @@ def report_vin_query(query: types.CallbackQuery):
 
 @bot.callback_query_handler(lambda query: query.data == 'gosnom_vin_query')
 def gosnom_vin_query(query: types.CallbackQuery):
+    vin = query.message.json['reply_to_message']['text'].replace(' ', '').upper()
+    bot.answer_callback_query(query.id, f'начат поиск госномера по vin: {vin}')
     with ThreadPoolExecutor() as executor:
         executor.map(post_gosnom_vin_query, [query])
 
 def post_gosnom_vin_query(query: types.CallbackQuery):
-    vin = query.message.json['reply_to_message']['text'].replace(' ', '')
+    vin = query.message.json['reply_to_message']['text'].replace(' ', '').upper()
     userID = query.message.json['reply_to_message']['from']['id']
-
-    res = requests.get(f'https://parser-api.com/parser/rsa_api/?key={API_KEY}&vin={vin}')
-    print(res)
-    gosnom = res.json()['policies'][0]['regNumber']
-    bot.reply_to(query.message.reply_to_message, f"госномер: {gosnom}")
+    notFind = False
+    res = requests.session().get(f'https://parser-api.com/parser/rsa_api/?key={API_KEY}&vin={vin}').json()
+    if res.get(['policies'][0]['regNumber']):
+        gosnom = res.get['policies'][0]['regNumber']
+    else:
+        res = requests.session().get(f'https://parser-api.com/parser/eaisto_mileage_api/?key={API_KEY}&vin={vin}').json()
+        if res.get['diagnose_cards'][0]['vin']:
+            gosnom = res['diagnose_cards'][0]['vin']
+        else:
+            notFind = True
+    if notFind:
+        bot.reply_to(query.message.reply_to_message, f'госномер по vin: {vin}\nне найден')
+    else:
+        bot.reply_to(query.message.reply_to_message, f"госномер: {gosnom}")
 
 @bot.callback_query_handler(lambda query: query.data == 'probeg_vin')
 def probeg_vin(query: types.CallbackQuery):
@@ -204,7 +215,7 @@ def report_gosnom_query(query: types.CallbackQuery):
 
 @bot.callback_query_handler(lambda query: query.data == 'get_vin_gosnom')
 def get_vin_gosnom(query: types.CallbackQuery):
-    bot.answer_callback_query(query.id, 'запрос по vin в обработке')
+    bot.answer_callback_query(query.id, 'запрос на получение vin в обработке')
     with ThreadPoolExecutor() as executor:
         executor.map(post_vin_gosnom_query, [query])
 
@@ -214,7 +225,7 @@ def post_vin_gosnom_query(query: types.CallbackQuery):
 
     res = requests.get(f'https://parser-api.com/parser/rsa_api/?key={API_KEY}&regNumber={gosnom}')
     vin = res.json()['policies'][0]['vin']
-    bot.reply_to(query.message.reply_to_message, f"vin: {vin}")
+    bot.reply_to(query.message.reply_to_message, f"*vin:* {vin}", parse_mode="Markdown")
 
 @bot.callback_query_handler(lambda query: query.data == 'probeg_gosnom')
 def probeg_gosnom(query: types.CallbackQuery):
@@ -249,15 +260,16 @@ def post_TO_gosnom_query(query):
 
     ress = requests.get(f'https://parser-api.com/parser/eaisto_mileage_api/?key={API_KEY}&regNumber={gosnom}')
     res = json.loads(ress.text)
-    sen = f'по госномеру {gosnom}\n' \
-          f'найдены следующие ТО\n'
+    sen = f'*по госномеру* {gosnom}\n' \
+          f'*найдены следующие ТО*\n'
     for i in res['mileages']:
         date  = i['date']
         mileage = i['mileage']
-        sen+= f"\nдата: {date}" \
-              f"\nпробег: {mileage}" \
-              f"\n----------------"
-    bot.reply_to(query.message.reply_to_message, sen)
+        sen+= f"\n*дата:* {date}" \
+              f"\n*пробег:* {mileage}" \
+              f"\n*----------------*"
+    print('ayf')
+    bot.reply_to(query.message.reply_to_message, sen, parse_mode="Markdown")
 
 @bot.callback_query_handler(lambda query: query.data == 'taxi_gosnom_query')
 def taxi_gosnom_query(query: types.CallbackQuery):
@@ -284,7 +296,7 @@ def post_taxi_gosnom_query(query: types.CallbackQuery):
                 a += 'статус: неактивен\n'
         bot.reply_to(query.message.reply_to_message, a)
     else:
-        bot.reply_to(query.message.reply_to_message, 'информации в реестрах такси не найдено')
+        bot.reply_to(query.message.reply_to_message, '*информации в реестрах такси не найдено*', parse_mode="Markdown")
 
 @bot.callback_query_handler(lambda query: query.data == 'zalogi_gosnom_query')
 def zalogi_gosnom_query(query: types.CallbackQuery):
@@ -448,7 +460,8 @@ def fssp(message:types.Message):
         else:
             lastName += i
 
-    ress = requests.get(f'http://parser-api.com/parser/info_api/?type=TYPE_SEARCH_FIZ&regionID=-1&lastName={lastName}&firstName={firstName}&key=90342864f3b769f22fd93e57aba51a49')
+    ress = requests.get(f'http://parser-api.com/parser/info_api/?type=TYPE_SEARCH_FIZ&regionID=-1&lastName={lastName}'
+                        f'&firstName={firstName}&key=90342864f3b769f22fd93e57aba51a49')
     res = ress.json()
     print(res)
     print(res)
@@ -469,20 +482,21 @@ def number_start(message: types.Message):
         executor.map(number, [message])
 
 def number(message: types.Message):
-    numt = message.text.replace(' ', '')
-    bot.send_message(message.from_user.id,
-                     f'заявка на генерацию отчета по номеру {numt} принята \nожидайте от минуты до получаса')
-    le = list(numt)
-    if le[0] == '+':
-        le.remove('+')
-    elif le[0] == '8':
-        le[0] = '7'
-    res = ''.join(le)
+        numt = message.text.replace(' ', '')
+        bot.send_message(message.from_user.id,
+                         f'заявка на генерацию отчета по номеру {numt} принята \nожидайте от минуты до получаса')
+        le = list(numt)
+        if le[0] == '+':
+            le.remove('+')
+        elif le[0] == '8':
+            le[0] = '7'
+        res = ''.join(le)
 
-    num = numberr.docN(res, 'user')
-    link = putFile.put(num.getHtml())
-    print('hey')
-    bot.send_message(message.from_user.id, f'отчет по номеру {res} доступен по сылке\n' + link)
+        num = numberr.docN(res, 'user')
+        link = putFile.put(num.getHtml())
+        print('hey')
+        bot.send_message(message.from_user.id, f'отчет по номеру {res} доступен по сылке\n' + link)
+
 
 def vin_start(message:types.Message):
     vin = message.text.replace(' ', '')
@@ -492,7 +506,6 @@ def vin_start(message:types.Message):
     bot.reply_to(message, f'vin: {vin}', reply_markup=mark)
 
 def gosnom_start(message:types.Message):
-    check_user(message)
     gosnom = message.text.replace(' ', '')
     gosnomList = list(gosnom)
     region = ''
@@ -527,10 +540,13 @@ def check_gosnom(text):
 
 
 def check_user(message: types.Message):
-    if update_time_user(message.from_user.id):
-        print(update_time_user(message.from_user.id), end='>>>>>>>>>\n')
+    resp = client_use(message.from_user.id)
+    if resp > 0:
+        print(resp, end='>>>>>>>>>\n')
+        return resp
     else:
-        print('wtf')
+        print('<<<<<<<<<<')
+        return True
 
 bot.polling(none_stop=True)
 

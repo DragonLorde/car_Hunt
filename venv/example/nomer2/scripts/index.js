@@ -10,7 +10,6 @@ for(let prop of km) {
     i++;
 }
 
-console.log(arrKm);
 
 
 i = 0;
@@ -21,11 +20,9 @@ for(let prop of km) {
     i++;
 }
 
-console.log(arrDate);
 
 
 let row = document.querySelectorAll('.ow-ow');
-console.log(row);
 let arrOwn = [];
 
 
@@ -52,14 +49,14 @@ let arrOwn = [];
     // specific series.
     series: {
       'series-1': {
-        lineSmooth: Chartist.Interpolation.step()
+        lineSmooth: Chartist.Interpolation.none()
       },
       'series-2': {
-        lineSmooth: Chartist.Interpolation.simple(),
+        lineSmooth: Chartist.Interpolation.none(),
         showArea: true
       },
       'series-3': {
-        lineSmooth: Chartist.Interpolation.simple(),
+        lineSmooth: Chartist.Interpolation.none(),
         showPoint: true
       }
     }
@@ -157,3 +154,5 @@ legend.align = "right";
 legend.data = chart.data;
 
 }); // end am4core.ready()
+
+

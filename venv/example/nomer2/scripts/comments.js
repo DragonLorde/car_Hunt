@@ -1,32 +1,35 @@
 let showBtn = document.querySelector('.com__btn');
 let comments = document.querySelector('.comments__column')
-let reg = document.querySelector('.reg2__reg22');
+let reg = document.querySelector('.header__vins');
 let col = document.querySelector('.comments__column');
+let loader = document.querySelector('.com__mm');
+
 
 showBtn.addEventListener('click', (e) => {
-    showBtn.classList.toggle('com__hide');
-    comments.classList.toggle('com__hide');
-    GetData(reg);
+        GetData(reg);
+        showBtn.removeEventListener('click',(e) => {GetData(reg);} , false);
 });
 
 async function GetData(regNmbr) {
-
-    axios.get('http://bsl-show.online/bot-data/comments.php?reg=' + regNmbr.textContent)
+    loader.classList.toggle('com__hide')
+    await axios.get('https://bsl-show.online/bot-data/comments.php?reg=' + regNmbr.textContent)
     .then(function (response) {
-        rower(response.data);
+        loader.classList.toggle('com__hide')
+        comments.classList.remove('com__hide') 
+        rower(response.data)
+        showBtn.classList.add('com__hide');
     })
 }
 
 
 function rower(data) {
-    reg.insertAdjacentElement
-    for(let i = 0; i <= data.length; i++) {
+    for(let prop of data) {
         col.insertAdjacentHTML("afterbegin", 
         `<div class='comments__row'>  
-        <p class='comments__name'>💬 ${data[i]['name']} 
-        <span class='comments__date'> ${data[i]['date']} </span> </p>
-        <p class='comments__text'> ${data[i]['text']} </p>
+        <p class='comments__name'>💬 ${prop.name} : <span class='comments__date'> 
+        ${prop['date']} </span> </p>
+        <p class='comments__text'> ${prop['text']} </p>
         </div>
-        `)
+        `);
     }
 }

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style/index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chartist/0.11.4/chartist.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://cdn.amcharts.com/lib/4/core.js"></script>
+    <script src="https://cdn.amcharts.com/lib/4/charts.js"></script>
+    <script src="https://cdn.amcharts.com/lib/4/themes/animated.js"></script>
+</head>
+<body>
+    <div class="btn">
+        <img src="res/moon.svg" alt="">
+    </div>
+    <div class="wrapper">
+        <header class="header">
+            <div class="header__logo">
+                <p class="header__logo-h">Отчет по госномеру</p>
+                <div class="reg">
+                    <div class="reg__row">
+                        <img src="circle.svg" alt="">
+                        <p class="pref1">А</p>
+                        <div class="reg__row-r">
+                            <p class="pref2">2</p>
+                            <p class="pref3">5</p>
+                            <p class="pref4">4</p>
+                        </div>
+                        <p class="pref5">А</p>
+                        <p class="pref6">В</p>
+                    </div>
+                    <div class="reg__block">
+                        <div class="reg__column">
+                            <div class="reg__info">
+                                <p class="pref7">777</p>
+                                <p>rus <img src="reg.png" alt="" width="14" height="9"></p>
+                            </div>
+                            <img src="circle.svg" alt="">
+            
+                        </div>
+                    </div>
+                </div>
+                    <div class="header__logo-text">
+                        <p> <span class="header__name">Александр</span> </p> <img src="res/icon/circle.svg"> <p> <span class="header__date">November 29, 2020</span> </p>
+                    </div>
+            </div>
+            <div class="header__logo">
+                <img class="header__logo-img" src="res/logo/logo.svg" alt="" style="position: absolute; margin: 0 auto; transform: translateX(-50%); left: 50%; max-width: 800px;">
+            </div>
+
+        </header>
+
+        <div class="mid">
+            <p class="mid__t">Средняя рыночная стоимость</p>
+            <div class="mid__info">
+                <p>Марка: <span class="mid__info-mark">Hyundai</span></p>
+                <p>Модель: <span class="mid__info-model">Solaris</span></p>
+                <p>Год: <span class="mid__info-eyer">2015</span></p>
+                <p>Цена на рынке: <span class="mid__info-seal">597349</span> Р <img src="res/icon/money-bag.svg" alt="" class="mid__info-mark-img"> </p>
+            </div>
+            <div class="mid__mile">
+                <p class="mid__mile-m">
+                    <img src="res/icon/distance.svg" alt=""> Пробег автомобиля</p>
+                <div class="mid__mile-graph">
+                    <div class="ct-chart ct-perfect-fourth"></div>
+                </div>
+                <div class="mid__mile-column">             
+
+                </div>
+            </div>
+        </div>
+        <div class="owner2">
+            <p class="owner2__t">Информация о владельцах</p>
+            <div class="owner2__info">
+                <p class=" owner2__par"><img src="res/icon/car.svg" alt=""> Госномер: <span class="owner2__info-reg">В101РР186</span></p>
+                <p class=" owner2__par">Машина <span class="owner2__info-car">Hyundai Solaris</span></p>
+                <p class=" owner2__par">Год машины:  <span class="owner2__info-date">2015</span></p>
+                <p class=" owner2__par">Владелец: <span class="owner2__info-own">Р***** НИКОЛАИ ВАСИЛЬЕВИЧ 13.09.1982</span></p>
+                <p class=" owner2__par">Год рождения владельца: <span class="owner2__info-owndate">1982-09-13</span></p>
+            </div>
+        </div>
+        <div class="eas">
+            <p class="eas__t">Пройденные техосмотры <br> (ЕАИСТО)</p>
+            <div class="eas__column">
+                <div class="eas__row">
+                    <p class="eas__par"> <img src="img/car-repair.svg" alt="">Госномер: <span class="eas__row-reg">В101РР186</span></p>
+                    <p class="eas__par">Пробег: <span class="eas__row-pr">64226</span> </p>
+                    <p class="eas__par">Номер кузова: <span class="eas__row-bd">Z94CT41CBFR420383</span></p>
+                    <p class="eas__par">Номер ДК: <span class="eas__row-dk">101540012010488</span></p>
+                    <p class="eas__par">Период действия: <span class="eas__row-date">С14.10.2020По15.10.2022</span></p>
+                </div>
+            </div>
+        </div>
+        <div class="rsa">
+            <p class="rsa__t">ОСАГО</p>
+            <p class="rsa__par">Компания страхования:  <span class="rsa__cmp">АО "ГСК "Югория"</span></p>
+            <p class="rsa__par"> Vin: <span class="rsa__vin">Z94CT41CBFR420383</span></p>
+            <p class="rsa__par">Владелец: <span class="rsa__prs">Р***** НИКОЛАИ ВАСИЛЬЕВИЧ</span></p>
+            <p class="rsa__par"> Дата рождения: <span class="rsa__date">1982-09-13</span> </p>
+            <p class="rsa__par">Локация: <span class="rsa__loc">Ханты-Мансийский Автономный округ - Югра АО, г Нефтеюганск</span></p>
+            <p class="rsa__par">Вознаграждение: <span class="rsa__cst">3223.26</span> Р</p>
+        </div>
+        </div>
+        <div class="zlg al-t">
+            <p class="zlg__t par_rt-r-p">Реестр залогов</p>
+            <div class="zlg__is par_rt-r" style="display: flex; flex-direction: column;">
+                <!-- <img src="img/check.svg" alt="">
+                &#1042; &#1088;&#1077;&#1077;&#1089;&#1090;&#1088;&#1077; &#1079;&#1072;&#1083;&#1086;&#1075;&#1086;&#1074; &#1079;&#1072;&#1087;&#1080;&#1089;&#1100; &#1089; &#1091;&#1082;&#1072;&#1079;&#1072;&#1085;&#1085;&#1099;&#1084; <br> VIN &#1085;&#1077; &#1085;&#1072;&#1081;&#1076;&#1077;&#1085;&#1072;. -->
+
+            <!-- <div class="owner__info-row"><img src="res/icon/check.svg"><p>По указанному VIN не не йденаинформация о залогах.</p> -->
+                <div class="zlg__column">
+
+                </div>
+</div>
+</div>
+        </div>
+        <div class="krs al-t">
+            <p class="krs par_rt-r-p">Использование в каршеринге</p>
+            <p class="krs__is par_rt-r">
+                <img src="res/icon/car (1).svg" alt="">
+                Информация об использовании в каршеринге <br> 
+                не найдена.
+            </p>
+        </div>
+        <div class="taxi al-t">
+            <p class="taxi__t par_rt-r-p">Использование в качестве такси</p>
+            <div class="taxi__is par_rt-r" style="display: flex;">
+            <div class="owner__info-row">
+                <div class="taxi__column">
+
+                </div>
+</div>
+</div>
+        </div>
+        <div class="otz al-t">
+            <p class="otz__t par_rt-r-p">Отзывные кампании</p>
+            <p class="otz__is par_rt-r">
+                <img src="res/icon/information.svg" alt="">
+                В списках автомобилей, попадающих под <br>
+                отзывные кампании производителей, <br>
+                запись не найдена. <br>
+            </p>
+        </div>
+        <div class="info2">
+            <p class="info2__tg">Дата отчета:  <span class="info2__date">December 8, 2020</span></p>
+            <p class="info2__tg">Отчёт создан: <span class="info2__tg">@CarHunter_Bot</span></p>
+        </div>
+    </div>
+     <style type="text/css">
+        table.damageMap { border: 0; padding: 0; margin: 0; width: 100%; }
+
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartist/0.11.4/chartist.min.js"></script>
+
+    <script src="scripts/index.js"></script>
+    <script src="scripts/moon.js"></script>
+</body>
+</html>

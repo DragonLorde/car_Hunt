@@ -53,13 +53,14 @@ def read_user_by_id(tgid):
             # 4 = phone_number
             # 5 = sub
             # 6 = last_call
+            # 7 = credit
 
 def write_user(tgID, firstName, userName, lastName, phoneNumber):
     try:
         con = create_connection()
         with con.cursor() as cur:
-            query = f"insert into users (telegram_id, first_name, username, last_name, phone_number, sub, last_call) values ('{tgID}', '{firstName}', '{userName}', '{lastName}', '{phoneNumber}', false, NOW());"
-            print(query)
+            query = f"insert into users (telegram_id, first_name, username, last_name, phone_number, sub, last_call, credit)" \
+                    f" values ('{tgID}', '{firstName}', '{userName}', '{lastName}', '{phoneNumber}', false, '2011-11-11', 0);"
             status = cur.execute(query)
             con.commit()
         res = True
@@ -70,7 +71,7 @@ def write_user(tgID, firstName, userName, lastName, phoneNumber):
         con.close()
     return res
 
-def update_time_user(tgID):
+def client_use(tgID):
     try:
         con = create_connection()
         with con.cursor() as cur:
@@ -86,6 +87,8 @@ def update_time_user(tgID):
                     lastCall = res[6]
                     time = (datetime.datetime.now().timestamp() - res[6].timestamp()) / 60
                     if time > 45:
+                        cur.execute(f'update users set last_call = NOW() where telegram_id = {tgID};')
+                        con.commit()
                         return True
                     else:
                         return round(45 - time)

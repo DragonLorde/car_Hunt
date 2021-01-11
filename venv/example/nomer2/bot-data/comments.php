@@ -15,7 +15,7 @@ class Bd {
     protected static $opt = [
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES   => false,
+        PDO::ATTR_EMULATE_PREPARES   => false, 
     ];
     
     function __construct () {}
@@ -66,9 +66,9 @@ class Comments {
     }
 
 
-    private function isCom($props) {
-        $stmt = $this->bd->prepare('SELECT * FROM `comm` WHERE `name` = ?');
-        $stmt->execute(array($props));
+    private function isCom($name, $reg) {
+        $stmt = $this->bd->prepare('SELECT * FROM `comm` WHERE `name` = ? AND `reg` = ?');
+        $stmt->execute(array($name, $reg));
         $res = $stmt->fetchColumn();
         if($res == 0) {
             return true;
@@ -77,7 +77,7 @@ class Comments {
     }
 
     private function putCom($props) {
-        $isRes = $this->isCom($props['name']);
+        $isRes = $this->isCom($props['name'],  $props['reg']);
         if($isRes) {
             $stmt = $this->bd->prepare('INSERT INTO `comm`( `name`, `date`, `reg`, `text`) VALUES (:nm, :dt, :rg, :txt )');
             $stmt->execute(array("nm" =>  $props['name'], "dt" => date("m.d.y"), "rg" => $props['reg'], "txt" => $props['text']));

@@ -13,9 +13,9 @@ function valid() {
 function request() {
 
     let nm = document.querySelector('.header__name').textContent;
-    let gos = document.querySelector('.reg2__reg22').textContent;
+    let gos = document.querySelector('.header__vins').textContent;
 
-    let url = 'http://bsl-show.online/bot-data/comments.php';
+    let url = 'https://bsl-show.online/bot-data/comments.php';
     let data =  {
         "name": '',
         "reg" : '',
@@ -52,15 +52,12 @@ function request() {
         axios
         .post(url , data)
         .then(response => {
-            if(!localStorage.getItem('test')) {
                 console.log(response);
                 document.querySelector('.comments__column').innerHTML = "";
                 rower(response.data);
                 localStorage.test = 2;
                 console.log(localStorage.test);
-            } else {
-                alert('no')
-            }
+
         })
         .catch((e) => console.log(e));
   
