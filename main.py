@@ -14,7 +14,7 @@ from data_base import *
 bot = TeleBot(TG_TOKEN)
 db = database()
 defultMessage = \
-'👉 Примеры запросов, которые  я принимаю:\n \
+'👉 Примеры запросов,  которые  я принимаю:\n \
 🚘 *Госномер автомобиля.* \n \
 _Пример:_ \n \
 🚗 *VIN номер автомобиля.*\n \
@@ -66,7 +66,7 @@ def post_gosnom_vin_query(query: types.CallbackQuery):
         else:
             notFind = True
     if notFind:
-        bot.reply_to(query.message.reply_to_message, f'госномер по vin: {vin}\nне найден')
+        bot.reply_to(query.message.reply_to_mgiessage, f'госномер по vin: {vin}\nне найден')
     else:
         bot.reply_to(query.message.reply_to_message, f"госномер: {gosnom}")
 
@@ -125,7 +125,7 @@ def post_taxi_vin_query(query: types.CallbackQuery):
     res = requests.get(f'https://parser-api.com/parser/taxi_api/?vin={vin}&key={API_KEY}').json()
     print(res['records'])
     if res['records']:
-        a = 'числилась в реестрах:\n'
+        a = 'Числилась в реестрах:\n'
         for elem in res['records']:
             date = elem['dateFrom']
             status = elem['isActual']
@@ -137,7 +137,7 @@ def post_taxi_vin_query(query: types.CallbackQuery):
                 a += 'статус: неактивен\n'
         bot.reply_to(query.message.reply_to_message, a)
     else:
-        bot.reply_to(query.message.reply_to_message, 'информации в реестрах такси не найдено')
+        bot.reply_to(query.message.reply_to_message, 'Информации в реестрах такси не найдено')
 
 @bot.callback_query_handler(lambda query: query.data == 'zalogi_vin_query')
 def zalogi_vin_query(query: types.CallbackQuery):
@@ -189,7 +189,7 @@ def post_zalogi_vin_query(query: types.CallbackQuery):
                  f'история:\n{history}'
             bot.send_message(userID, a)
     else:
-        bot.send_message(userID, 'по данному vin-коду не найдено залогов')
+        bot.send_message(userID, 'По данному vin-коду не найдено залогов')
 
 #здесь обработчики запросов с сообщения госномера =>
 
@@ -209,13 +209,13 @@ def other_funk_gosnom(query: types.CallbackQuery):
 @bot.callback_query_handler(lambda query: query.data == 'report_gosnom_query')
 def report_gosnom_query(query: types.CallbackQuery):
     rep = report(bot)
-    bot.answer_callback_query(query.id, f'запрос на отчет по госномеру: {query.message.reply_to_message.text} принят')
+    bot.answer_callback_query(query.id, f'Запрос на отчет по госномеру: {query.message.reply_to_message.text} принят')
     with ThreadPoolExecutor() as executor:
-        executor.map(rep.gibbd_report, [query.message.reply_to_message])
+        executor.map(rep.gosnom_report, [query.message.reply_to_message])
 
 @bot.callback_query_handler(lambda query: query.data == 'get_vin_gosnom')
 def get_vin_gosnom(query: types.CallbackQuery):
-    bot.answer_callback_query(query.id, 'запрос на получение vin в обработке')
+    bot.answer_callback_query(query.id, 'Запрос на получение vin в обработке')
     with ThreadPoolExecutor() as executor:
         executor.map(post_vin_gosnom_query, [query])
 
@@ -420,13 +420,27 @@ def text_worker(message: types.Message):
         gosnom_start(message)
     elif len(text) == 17:
         vin_start(message)
-    elif len(text) == 11 or len(text) == 12 and list(text)[0] == '+':
-        number_start(message)
-    elif text.find('(') != -1 and text.find(')') != -1 and text.find('7') or text.find('8'):
-        message.text = message.text.replace('(', '').replace(')', '').replace('-', '')
+    # elif len(text) == 11 or len(text) == 12 and list(text)[0] == '+':
+    #     number_start(message)
+    elif len(text) >= 11 and check_number(text):
         number_start(message)
     else:
-        print('invalid')
+        bot.send_message(message.from_user.id, 'инструкция')
+
+def check_number(number: str):
+    number = number.replace('+', '').replace(' ', '').replace('(', '').replace(')', '').replace('-', '')
+    num = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+    nums = ''
+    for i in number:
+        for a in num:
+            if i == a:
+                nums += '1'
+    if len(number) == len(nums):
+        res = True
+    else:
+        res = False
+    return res
+
 
 def start_url(message: types.Message):
     with ThreadPoolExecutor() as executor:
@@ -438,7 +452,7 @@ def url(message: types.Message):
         f'http://crwl.ru/api/rest/latest/get_ad/?api_key=3c546d52e9d39dd03fb662265c6a193e&url={message.text}')
     res = ress.json()
     # print(res['title'])
-    print(res['phone'])
+    print(res)
     bot.send_message(message.chat.id, res['phone'])
 
 def fssp_start(message:types.Message):
@@ -482,7 +496,7 @@ def number_start(message: types.Message):
         executor.map(number, [message])
 
 def number(message: types.Message):
-        numt = message.text.replace(' ', '')
+        numt = message.text.replace('+', '').replace(' ', '').replace('(', '').replace(')', '').replace('-', '')    
         bot.send_message(message.from_user.id,
                          f'заявка на генерацию отчета по номеру {numt} принята \nожидайте от минуты до получаса')
         le = list(numt)
@@ -491,8 +505,8 @@ def number(message: types.Message):
         elif le[0] == '8':
             le[0] = '7'
         res = ''.join(le)
-
-        num = numberr.docN(res, 'user')
+        print(message.from_user)
+        num = numberr.docN(res, message.from_user.username)
         link = putFile.put(num.getHtml())
         print('hey')
         bot.send_message(message.from_user.id, f'отчет по номеру {res} доступен по сылке\n' + link)
@@ -550,3 +564,4 @@ def check_user(message: types.Message):
 
 bot.polling(none_stop=True)
 
+bot.edit_
