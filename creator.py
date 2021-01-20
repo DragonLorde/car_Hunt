@@ -337,12 +337,16 @@ class doc():
                     mdl.string = model
                     md = self.mid_Car(mark, model)
                     if md['seal'] == 'no__data':
-                        mdArr = self.gib['history']['model'].split()
-                        mark = mdArr[0]
-                        model = mdArr[1]
-                        mrk.string = mdArr[0]
-                        mdl.string = mdArr[1]
-                        md = self.mid_Car(mark, model)
+                        if len(self.gib['history']['model'].split()) > 1:
+                            mdArr = self.gib['history']['model'].split()
+                            mark = mdArr[0]
+                            model = mdArr[1]
+                            mrk.string = mdArr[0]
+                            mdl.string = mdArr[1]
+                            md = self.mid_Car(mark, model)
+                        else:
+                            mrk.string = self.gib['history']['model']
+                            mdl.string = ' '
                         if md['seal'] == 'no__data':
                             print('no mid')
                         else:
@@ -629,7 +633,8 @@ class doc():
                     reg.string = self.rsa['policies'][0]['regNumber']
                 else:
                     reg.string = 'Информация не найдена'
-            mil.string = str(self.eas['diagnose_cards'][0]['mileage'])
+            if self.eas['diagnose_cards'][0].get('mileage'):
+                mil.string = str(self.eas['diagnose_cards'][0]['mileage'])
             bod.string = self.eas['diagnose_cards'][0]['vin']
             dk.string = str(self.eas['diagnose_cards'][0]['number'])
             yer.string = 'С ' + str(self.eas['diagnose_cards'][0]['startDate']) + ' по ' + str(self.eas['diagnose_cards'][0]['endDate'])

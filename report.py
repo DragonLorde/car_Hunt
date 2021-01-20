@@ -4,6 +4,7 @@ from config import API_KEY
 import requests
 from regions import region_codes
 from creator import doc, put
+from data_base import write_report
 import json
 import time
 
@@ -40,18 +41,19 @@ class report:
             gosnom = message.text.replace(' ', '')
             botMes = self.bot.send_message(message.from_user.id, f'Начата обработка отчета по госномеру {gosnom}')
             self._make_rsa(requests.Session(), f'https://parser-api.com/parser/rsa_api/?key={API_KEY}&regNumber={gosnom}', botMes)
-            if self.rsa.get('polices'):
+            if 'policies' in self.rsa:
+
                 print('fadad')
                 vin = self.rsa['policies'][0]['vin']
+                print(vin)
             else:
-                print('sda')
                 easitoExist = True
                 self._make_easito(requests.Session(), f'https://parser-api.com/parser/eaisto_mileage_api/?key={API_KEY}&regNumber={gosnom}', botMes)
                 if self.easito.get('diagnose_cards'):
                     vin = self.easito['diagnose_cards'][0]['vin']
                 else:
                     vin = False
-            print(vin)
+
             if vin:
                 with ThreadPoolExecutor() as executor:
                     with requests.Session() as session:
@@ -60,7 +62,7 @@ class report:
                                              [f'https://parser-api.com/parser/eaisto_mileage_api/?key={API_KEY}&regNumber={gosnom}'], [botMes])
                         executor.map(self._make_gibdd, [session], [
                             f'https://parser-api.com/parser/gibdd_api/?key={API_KEY}&vin={vin}&types=history,dtp,wanted,restrict'],
-                                     [botMes])
+                                     [ botMes])
                         executor.map(self._make_taxi, [session],
                                      [f'https://parser-api.com/parser/taxi_api/?regNumber={gosnom}&key={API_KEY}'], [botMes])
                         executor.map(self._make_reestr, [session],
@@ -79,20 +81,18 @@ class report:
                         if self.taxi:
                             print(self.taxi)
                         print('========================================')
-                        if self.rsa.get('policies'):
-                            if self.rsa['policies'][0].get('regNumber'):
-                                gosnom = self.rsa['policies'][0]['regNumber']
-                                lstGosnom = list(gosnom)
-                                region = ''
-                                for i in range(6, len(lstGosnom)):
-                                    region += lstGosnom[i]
-                                region = region_codes[region]
-                            else:
-                                gosnom = 'не найдено'
-                                region = ''
-                        else:
-                            gosnom = 'не найдено'
-                            region = ''
+
+
+                        print(gosnom)
+                        lstGosnom = list(gosnom)
+                        print(lstGosnom)
+                        region = ''
+                        for i in range(6, len(lstGosnom)):
+                            region += lstGosnom[i]
+                        region = region_codes[region]
+
+
+                        print('bice')
                         print(region)
                         print(gosnom)
 
@@ -102,6 +102,8 @@ class report:
                         self.bot.edit_message_text(
                             f'Отчет по машине с vin-кодом: {vin} и госномером:{gosnom}  готов\n{link}',
                             botMes.chat.id, botMes.id, parse_mode="Markdown")
+                        write_report(vin, gosnom, '0', link, '0', self.easito, self.gibdd, self.rsa, self.taxi,
+                                     self.reestr)
             else:
                 self.bot.edit_message_text(
                     f'Увы мы не нашли машину с таком госномером, попробуйте пожалуйста позже',
@@ -172,6 +174,11 @@ class report:
                 self.bot.edit_message_text(
                     f'Отчет по машине с vin-кодом: {vin} и госномером:{gosnom}  готов\n{link}',
                     botMes.chat.id, botMes.id, parse_mode="Markdown")
+                if gosnom == 'не найдено':
+                    gosnom = ''
+                write_report(vin, gosnom, '0', link, '0', self.easito, self.gibdd, self.rsa, self.taxi,
+                             self.reestr)
+
 
 
     def _make_rsa(self, session, url, message):

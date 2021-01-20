@@ -12,6 +12,17 @@ def create_connection():
     db=DB_NAME)
     return connection
 
+def write_report(vin, regNumber, bodyNumber, url, photo, easito, gibbd, rsa, taxi, reestr):
+    con = create_connection()
+    with con.cursor() as cur:
+        query = "insert into cars_reports" \
+                "(vin, reg_number, body_number, url, photo, date_generation, easito, gibbd, rsa, taxi, reestr)" \
+                f" values (@{vin}@, @{regNumber}@, @{bodyNumber}@, @{url}@, @{photo}@, NOW(), @{easito}@, @{gibbd}@, @{rsa}@, @{taxi}@, @{reestr}@);".replace("'", "''").replace('@', "'")
+        print(query)
+        a = cur.execute(query)
+        con.commit()
+        print(a)
+
 def get_all_info():
     con = create_connection()
     with con.cursor() as cur:

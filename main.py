@@ -3,7 +3,6 @@ from telebot import TeleBot, types
 import putFile
 from regions import region_codes
 from config import TG_TOKEN, API_KEY
-from database import database
 from concurrent.futures import ThreadPoolExecutor
 from report import report
 import requests
@@ -12,7 +11,6 @@ import number as numberr
 from data_base import *
 
 bot = TeleBot(TG_TOKEN)
-db = database()
 defultMessage = \
 '👉 Примеры запросов,  которые  я принимаю:\n \
 🚘 *Госномер автомобиля.* \n \
@@ -224,7 +222,18 @@ def post_vin_gosnom_query(query: types.CallbackQuery):
     userID = query.message.json['reply_to_message']['from']['id']
 
     res = requests.get(f'https://parser-api.com/parser/rsa_api/?key={API_KEY}&regNumber={gosnom}')
-    vin = res.json()['policies'][0]['vin']
+    if res.text.find('vin') != -1:
+        vin = res.json()['policies'][0]['vin']
+        print('police')
+    else:
+        print('try easito')
+        res = requests.get(f'https://parser-api.com/parser/eaisto_mileage_api/?key={API_KEY}&regNumber={gosnom}')
+        if res.text.find('diagnose_cards') != -1:
+            vin = res.json()['diagnose_cards'][0]['vin']
+            print('try easito nice')
+        else:
+            print('try not nice')
+            vin = ' увы не найден'
     bot.reply_to(query.message.reply_to_message, f"*vin:* {vin}", parse_mode="Markdown")
 
 @bot.callback_query_handler(lambda query: query.data == 'probeg_gosnom')
