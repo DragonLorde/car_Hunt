@@ -4,6 +4,7 @@ import datetime
 import requests
 import random
 import paramiko
+import os
 
 
 
@@ -13,7 +14,6 @@ import paramiko
 class doc():
     def __init__(self, data, tg_id, region_country, vin):
         self.vin = vin
-        print('aaaaaa')
         self.gib = data[0]
         self.eas = data[1]
         self.rsa = data[2]
@@ -23,11 +23,11 @@ class doc():
         docs = doc.docc()
         self.soup = BeautifulSoup(docs, 'html.parser')
         self.region = region_country
-        print(data , tg_id , region_country, vin)
 
         if self.gib['history'] != None:
             self.date_car = self.date_Car()
             self.mile_generation = self.mile_Gen()
+            print(self.mile_generation['mile'])
             if self.mile_generation['mile'] != []:
                 self.mls = self.mile_generation['mile'][len(self.mile_generation['mile']) - 1]['mileage']
                 self.mlsDate = self.mile_generation['mile'][len(self.mile_generation['mile']) - 1]['date']
@@ -35,6 +35,7 @@ class doc():
                 self.mls = str('5000')
                 now = datetime.datetime.now()
                 self.mlsDate = str(now.strftime("%d-%m-%Y %H:%M"))
+            self.mlsDt = ''
 
         self.head()
         self.base()
@@ -96,15 +97,14 @@ class doc():
 
 
     def head(self):
-        print('head')
+
         header = self.soup.find('header')
         logoImg = header.find("img", {"class": "header__logo-img"})
         if self.rsa.get('policies'):
             if self.rsa['policies'][0].get('regNumber'):
                 self.regCr(self.rsa['policies'][0]['regNumber'])
-                carPhoto = self.carPhoto()
-                if carPhoto:
-                    logoImg['src'] = carPhoto
+                if self.carPhoto():
+                    logoImg['src'] = self.carPhoto()
             elif self.eas.get('diagnose_cards'):
                 if self.eas['diagnose_cards'][0].get('regNumber'):
                     if self.eas['diagnose_cards'][0]['regNumber'] != 'None':
@@ -117,19 +117,17 @@ class doc():
                     regN.decompose()
         elif self.eas.get('diagnose_cards'):
             if self.eas['diagnose_cards'][0].get('regNumber'):
+                print('asfasfas')
                 self.regCr(self.eas['diagnose_cards'][0]['regNumber'])
-                print('gos')
-                resPhoto = self.carPhotoEas()
-                if resPhoto:
-                    logoImg['src'] = resPhoto
-                    print(logoImg)
+                if self.carPhotoEas():
+                    logoImg['src'] = self.carPhoto()
             else:
                 regN = self.soup.find("div", {"class": "reg"})
                 regN.decompose()
         else:
             regN = self.soup.find("div", {"class": "reg"})
             regN.decompose()
-        print('gos2')
+
         now = datetime.datetime.now()
         hdN = self.soup.find('span', {"class": "header__name"})
         hdD = self.soup.find('span', {"class": "header__date"})
@@ -139,7 +137,6 @@ class doc():
 
 
     def base(self):
-        print('base')
         region = self.soup.find('p', {"class": "region__region2"})
         region.string = self.region
         milg = self.soup.find('span', {"class": "base__mile-km"})
@@ -150,9 +147,13 @@ class doc():
         rest = self.soup.find('span', {"class": "base__res"})
         srch = self.soup.find('span', {"class": "base__wntd"})
 
-        if self.eas.get('mileages'):
-            milg.string = str(self.eas['mileages'][len(self.eas['mileages']) - 1]['mileage'])
-            milD.string = str(self.eas['mileages'][len(self.eas['mileages']) - 1]['date'])
+        if self.eas.get('diagnose_cards'):
+            if self.eas['diagnose_cards'] != "None":
+                milg.string = str(self.eas['diagnose_cards'][0]['mileage'])
+                milD.string = str(self.eas['diagnose_cards'][0]['startDate'])
+            else:
+                milg.string = 'Не найдна информация'
+                milD.string = 'Не найдна информация'
         elif self.gib['history'] != None:
             milg.string = str(self.mls)
             milD.string = str(self.mlsDate)
@@ -160,7 +161,6 @@ class doc():
             milg.string = 'Не найдна информация'
             milD.string = 'Не найдна информация'
 
-        print('alo')
 
         if self.gib['accidents'] == []:
             gb.string = ' '
@@ -209,12 +209,12 @@ class doc():
             reg22.decompose()
             self.soup.findAll('div', {"class": "none"})[0]['style'] = 'display:block'
 
-        print('alo2')
+
         if self.gib['history'] != None:
             self.soup.find('span', {"class": "base__info-mark"}).string = self.gib['history']['model']
             self.soup.find('span', {"class": "base__info-date"}).string = self.gib['history']['year']
-            self.soup.find('span', {"class": "base__info-kat"}).string = str(self.gib['history']['category'])
-            self.soup.find('span', {"class": "base__info-kz"}).string = str(self.gib['history']['bodyNumber'])
+            self.soup.find('span', {"class": "base__info-kat"}).string = self.gib['history']['category']
+            self.soup.find('span', {"class": "base__info-kz"}).string = self.gib['history']['bodyNumber']
             self.soup.find('span', {"class": "base__info-clr"}).string = self.gib['history']['color']
             self.soup.find('span', {"class": "base__info-ob3"}).string = ','.join(list(str(int(round(float(self.gib['history']['engineVolume']), -2))).strip('00')))
             self.soup.find('span', {"class": "base__info-pw"}).string = self.gib['history']['powerHp']
@@ -222,10 +222,10 @@ class doc():
             self.soup.find('span', {"class": "base__info-type"}).string = self.gib['history']['type']
         else:
             milg = self.soup.find('div', {"class": "base__info"})
-            milg.decompose()
+            milg['style'] = 'display: none'
             self.soup.findAll('div', {"class": "none"})[0]['style'] = 'display: block'
 
-        print('base')
+
 
 
     def base_japan(self):
@@ -243,8 +243,8 @@ class doc():
             ownC.string = str(len(self.gib['history']['ownershipPeriods']))
             dt = self.date_car
             if int(dt['date']) <= 2:
-                if int(dt['date']) == 0:
-                    ownD.string = 'Меньше года'
+                if dt['date'] == 0:
+                    ownD.string = 'Меньше одного года'
                 else:
                     ownD.string = str(dt['date']) + ' год'
             elif int(dt['date']) > 2 and int(dt['date']) <= 4:
@@ -309,7 +309,7 @@ class doc():
             eyr.string = self.gib['history']['year']
         else:
             eyr.decompose()
-        print('alo')
+
         if self.rsa.get('policies') and self.gib['history'] != None:
             if self.rsa['policies'][0].get('model') and self.rsa['policies'][0].get('mark'):
                 if len(self.rsa['policies'][0]['model'].split()) > 1:
@@ -384,22 +384,47 @@ class doc():
 
 
         if self.eas.get('mileages'):
-            col = self.soup.find('div', {"class": "mid__mile-column"})
-            if len(self.eas['mileages']) == 1:
-                self.soup.find('div', {"class": "mid__mile-graph"}).decompose()
-            for prop in reversed(self.eas['mileages']):
-                div = self.soup.new_tag('div', **{'class': 'fnd'})
-                p = self.soup.new_tag('p')
-                span = self.soup.new_tag('span', **{'class': 'mid__mile-km'})
-                span2 = self.soup.new_tag('span', **{'class': 'mid__mile-date'})
-                span.string = str(prop['mileage']) + ' КМ по состоянию на '
-                span2.string = prop['date']
-                p.append(span)
-                p.append(span2)
-                div.append(p)
-                col.append(div)
-                self.mls = str(prop['mileage'])
-                self.mlsDt = prop['date']
+            if self.eas['mileages'] != "None":
+                col = self.soup.find('div', {"class": "mid__mile-column"})
+                if len(self.eas['mileages']) == 1:
+                    self.soup.find('div', {"class": "mid__mile-graph"}).decompose()
+                for prop in reversed(self.eas['mileages']):
+                    div = self.soup.new_tag('div', **{'class': 'fnd'})
+                    p = self.soup.new_tag('p')
+                    span = self.soup.new_tag('span', **{'class': 'mid__mile-km'})
+                    span2 = self.soup.new_tag('span', **{'class': 'mid__mile-date'})
+                    span.string = str(prop['mileage']) + ' КМ по состоянию на '
+                    span2.string = prop['date']
+                    p.append(span)
+                    p.append(span2)
+                    div.append(p)
+                    col.append(div)
+                    self.mls = str(prop['mileage'])
+                    self.mlsDt = prop['date']
+            elif self.gib['history'] != None:
+                if self.mile_generation['mile'] != []:
+                    col = self.soup.find('div', {"class": "mid__mile-column"})
+                    if len(self.mile_generation['mile']) == 1:
+                        self.soup.find('div', {"class": "mid__mile-graph"}).decompose()
+                    for prop in self.mile_generation['mile']:
+                        div = self.soup.new_tag('div', **{'class': 'fnd'})
+                        p = self.soup.new_tag('p')
+                        span = self.soup.new_tag('span', **{'class': 'mid__mile-km'})
+                        span2 = self.soup.new_tag('span', **{'class': 'mid__mile-date'})
+                        span.string = str(prop['mileage']) + ' КМ по состоянию на '
+                        span2.string = prop['date']
+                        p.append(span)
+                        p.append(span2)
+                        div.append(p)
+                        col.append(div)
+                        self.mls = str(prop['mileage'])
+                        self.mlsDt = prop['date']
+                else:
+                    self.soup.find('div', {"class": "mid__mile"}).decompose()
+                    self.soup.findAll('div', {"class": "none"})[3]['style'] = 'display: block'
+            else:
+                self.soup.find('div', {"class": "mid__mile"}).decompose()
+                self.soup.findAll('div', {"class": "none"})[3]['style'] = 'display: block'
         elif self.gib['history'] != None:
             if self.mile_generation['mile'] != []:
                 col = self.soup.find('div', {"class": "mid__mile-column"})
@@ -419,10 +444,12 @@ class doc():
                     self.mls = str(prop['mileage'])
                     self.mlsDt = prop['date']
             else:
+                print('alo')
                 self.soup.find('div', {"class": "mid__mile"}).decompose()
                 self.soup.findAll('div', {"class": "none"})[3]['style'] = 'display: block'
+
         else:
-            self.soup.find('div', {"class": "mid__mile"}).decompose()
+            self.soup.find('div', {"class": "mid__mile"})['style'] = 'display: none'
             self.soup.findAll('div', {"class": "none"})[3]['style'] = 'display: block'
 
 
@@ -475,22 +502,18 @@ class doc():
 
 
     def own2(self):
-        print('tuta2')
         if self.rsa.get('policies') and self.gib['history'] != None:
             index = len(self.rsa['policies']) - 1
-            print(index)
             gos = self.soup.find('span', {"class": "owner2__info-reg"})
             self.soup.find('span', {"class": "owner2__info-car"}).string = self.gib['history']['model']
             self.soup.find('span', {"class": "owner2__info-date"}).string = self.gib['history']['year']
             self.soup.find('span', {"class": "owner2__info-own"}).string = self.rsa['policies'][index]['ownerName']
             self.soup.find('span', {"class": "owner2__info-owndate"}).string = self.rsa['policies'][index]['ownerDob']
-            print('1')
+
             if self.rsa['policies'][0].get('regNumber'):
-                print('2')
                 gos.string = self.rsa['policies'][index]['regNumber']
             elif self.eas.get('diagnose_cards'):
-                if self.eas['diagnose_cards'][0].get('regNumber'):
-                    gos.string = self.eas['diagnose_cards'][0]['regNumber']
+                gos.string = self.eas['diagnose_cards'][0]['regNumber']
         elif self.rsa.get('policies'):
             if self.rsa['policies'][0].get('model') and self.rsa['policies'][0].get('mark'):
                 index = len(self.rsa['policies']) - 1
@@ -504,7 +527,6 @@ class doc():
                     gos.string = self.rsa['policies'][index]['regNumber']
                 elif self.eas.get('diagnose_cards'):
                     if self.eas['diagnose_cards'][0].get('regNumber'):
-
                         gos.string = self.eas['diagnose_cards'][0]['regNumber']
                     else:
                         gos.string = 'Информация не найдена'
@@ -524,9 +546,9 @@ class doc():
                 gos.string = 'Информация не найдена'
 
         else:
-            self.soup.find('div', {"class": "owner2__info"}).decompose()
+            self.soup.find('div', {"class": "owner2__info"})['style'] = 'display: none'
             self.soup.findAll('div', {"class": "none"})[4]['style'] = 'display: block'
-        print('end')
+
 
     def own2_japan(self):
         gos = self.soup.find('span', {"class": "owner2__info-reg"})
@@ -541,7 +563,6 @@ class doc():
         dat.string = self.rsa['policies'][0]['ownerDob']
 
     def dtp(self):
-        print('dtp')
         cnt = self.soup.find('span', {"class": "dtp__count"})
         if self.gib['accidents'] != None:
             cnt.string = str(len(self.gib['accidents']))
@@ -596,7 +617,7 @@ class doc():
                 div.append(p6)
                 if prop.get('damageSvg'):
                     if prop['damageSvg'] != 'None':
-                        print(prop['damageSvg'])
+                        print('dtp detected')
                         svg = BeautifulSoup(self.get_Svg(prop['damageSvg']), 'html.parser')
                         header = self.soup.new_tag('head')
                         body = self.soup.new_tag('body')
@@ -613,6 +634,8 @@ class doc():
             p.append(span)
             div.append(p)
             col.append(div)
+            self.soup.findAll('div', {"class": "none"})[5]['style'] = 'display: block'
+
 
     def dtp_japan(self):
         col = self.soup.find('div', {"class": "dtp"})
@@ -650,8 +673,8 @@ class doc():
             now = datetime.datetime.now()
             yer.string = str(self.mlsDt) + ' По ' + now.strftime("%d-%m-%Y")
         else:
-            self.soup.find('div', {"class": "eas__row"}).decompose()
-            self.soup.findAll('div', {"class": "none"})[5]['style'] = 'display: block'
+            self.soup.find('div', {"class": "eas__row"})['style'] = 'display: none'
+            self.soup.findAll('div', {"class": "none"})[6]['style'] = 'display: block'
 
 
     def rsas(self):
@@ -671,8 +694,8 @@ class doc():
             loc.string = self.rsa['policies'][0]['location']
             cost.string = self.rsa['policies'][0]['cost']
         else:
-            self.soup.find('div', {"class":"rsa__row"}).decompose()
-            self.soup.findAll('div', {"class": "none"})[6]['style'] = 'display: block'
+            self.soup.find('div', {"class":"rsa__row"})['style'] = 'display: none'
+            self.soup.findAll('div', {"class": "none"})[7]['style'] = 'display: block'
 
 
     def wntd(self):
@@ -705,6 +728,8 @@ class doc():
             p = self.soup.new_tag('p')
             p.string = '✅ По указанному VIN не не найденаинформация о розыске транспортного средства.'
             div.append(p)
+            self.soup.findAll('div', {"class": "none"})[8]['style'] = 'display: block'
+
             col.append(div)
 
     def wntd_japan(self):
@@ -712,7 +737,6 @@ class doc():
         col.decompose()
 
     def ogr(self):
-        print('no ogr')
         col = self.soup.find('div', {"class": "ogr__column"})
         if len(self.gib['restrictions']) > 0:
             for prop in self.gib['restrictions']:
@@ -761,6 +785,8 @@ class doc():
             p.string = '✅ По указанному VIN не не найденаинформация об ограничениях.'
             div.append(p)
             col.append(div)
+            self.soup.findAll('div', {"class": "none"})[9]['style'] = 'display: block'
+
 
     def ogr_japan(self):
         col = self.soup.find('div', {"class": "ogrs"})
@@ -801,6 +827,7 @@ class doc():
                         p.append(span)
                         div4.append(p)
                         div.append(div4)
+
                 if prop.get('pledgors'):
                     for prop2 in prop['pledgors']:
                         div2 = self.soup.new_tag("div", **{"class": "zlg__row-laz"})
@@ -822,7 +849,6 @@ class doc():
                         div2.append(p)
                         div2.append(p2)
                         div.append(div2)
-
                 if prop.get('history'):
                     for prop2 in prop['history']:
                         div2 = self.soup.new_tag("div", **{"class": "zlg__row-laz"})
@@ -859,6 +885,7 @@ class doc():
             p = self.soup.new_tag('p')
             p.string = '✅ По указанному VIN не не найденаинформация об ограничениях.'
             div.append(p)
+            self.soup.findAll('div', {"class": "none"})[10]['style'] = 'display: block'
             col.append(div)
 
 
@@ -898,6 +925,8 @@ class doc():
             p = self.soup.new_tag('p')
             p.string = '🚕 Информация о наличии разрешения на осуществление деятельности по перевозке пассажиров не найдена.'
             div.append(p)
+            self.soup.findAll('div', {"class": "none"})[11]['style'] = 'display: block'
+
             col.append(div)
 
     def getHtml(self):
@@ -925,17 +954,6 @@ class doc():
         # у 804 км 799
         #self.rsa['policies'][0]['regNumber']
         response = requests.get('http://bsl-show.online/bot-data/reg.php?reg=' + self.eas['diagnose_cards'][0]['regNumber'])
-        if response:
-            jsn = response.json()
-            if jsn['src'] == 'no__img':
-                return False
-            else:
-                print(jsn)
-                return jsn['src']
-        else:
-            print('An error has occurred.')
-            return False
-
         if response:
             jsn = response.json()
             if jsn['src']  == 'no__img':
@@ -999,12 +1017,15 @@ def put(name):
     sftp = ssh.open_sftp()
     lnk = "www/bsl-show.online/push/number/" + name[1] + '.html'
     sftp.put(name[0], lnk)
+    path = os.path.join(os.path.abspath(os.path.dirname(name[0])), name[1] + '.html')
+    os.remove(path)
+    print('Base information returned')
+    print(name)
     return 'https://bsl-show.online/push/number/' + name[1] + '.html'
 
 
 # res = doc(getData.data(), 'gay', '', 'X9F4XXEED47T11217')
 # link = put(res.getHtml())
 # print(link)
-
 
 

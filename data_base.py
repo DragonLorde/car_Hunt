@@ -12,6 +12,34 @@ def create_connection():
     db=DB_NAME)
     return connection
 
+def read_reports_by_reg_number(regNumber):
+    con = create_connection()
+    with con.cursor() as cur:
+        status = cur.execute(f"select url, date_generation from cars_reports where reg_number = '{regNumber}';")
+        if status == 0:
+            cur.close()
+            con.close()
+            return False
+        else:
+            res = cur.fetchall()
+            cur.close()
+            con.close()
+            return res
+
+def read_reports_by_vin(vin):
+    con = create_connection()
+    with con.cursor() as cur:
+        status = cur.execute(f"select url, date_generation from cars_reports where vin = '{vin}';")
+        if status == 0:
+            cur.close()
+            con.close()
+            return False
+        else:
+            res = cur.fetchall()
+            cur.close()
+            con.close()
+            return res
+
 def write_report(vin, regNumber, bodyNumber, url, photo, easito, gibbd, rsa, taxi, reestr):
     con = create_connection()
     with con.cursor() as cur:

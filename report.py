@@ -98,6 +98,7 @@ class report:
 
                         print('==================')
                         docs = doc(res, message.from_user.username, region, vin)
+                        print('dsasdas')
                         link = put(docs.getHtml())
                         self.bot.edit_message_text(
                             f'Отчет по машине с vin-кодом: {vin} и госномером:{gosnom}  готов\n{link}',
@@ -168,9 +169,12 @@ class report:
                 else:
                     gosnom = 'не найдено'
                     region = ''
-                print(region)
+                print('fdsadfsdaf')
+
                 docs = doc(res, message.from_user.username, region, vin)
+                print('213456789')
                 link = put(docs.getHtml())
+                print('13456789')
                 self.bot.edit_message_text(
                     f'Отчет по машине с vin-кодом: {vin} и госномером:{gosnom}  готов\n{link}',
                     botMes.chat.id, botMes.id, parse_mode="Markdown")

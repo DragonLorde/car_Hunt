@@ -526,18 +526,41 @@ def vin_start(message:types.Message):
     mark = types.InlineKeyboardMarkup()
     mark.add(types.InlineKeyboardButton('📝полный отчет', callback_data='report_vin_query'))
     mark.add(types.InlineKeyboardButton('🧿другие функции...', callback_data='other_funk_vin'))
-    bot.reply_to(message, f'vin: {vin}', reply_markup=mark)
+    records = read_reports_by_vin(vin)
+
+    if records:
+        ready_reports = 'готовые отчеты:\n'
+        for record in records:
+            ready_reports += f'{record[0]}\nот {record[1]}\n'
+    else:
+        ready_reports = ''
+    bot.reply_to(message, f'vin: {vin}\n{ready_reports}', reply_markup=mark)
 
 def gosnom_start(message:types.Message):
-    gosnom = message.text.replace(' ', '')
+    gosnom = message.text.replace(' ', '').upper()
     gosnomList = list(gosnom)
+    records = read_reports_by_reg_number(gosnom)
+    records = read_reports_by_reg_number(gosnom)
+
+    if records:
+        ready_reports = 'готовые отчеты:\n'
+        for record in records:
+            ready_reports += f'{record[0]}\nот {record[1]}\n'
+    else:
+        ready_reports = ''
+    if records:
+        ready_reports = 'готовые отчеты:\n'
+        for record in records:
+            ready_reports += f'{record[0]}\nот {record[1]}\n'
+    else:
+        ready_reports = ''
     region = ''
     for i in range(6, len(gosnom)):
         region += gosnomList[i]
     mark = types.InlineKeyboardMarkup()
     mark.add(types.InlineKeyboardButton("📝полный отчет", callback_data='report_gosnom_query'))
     mark.add(types.InlineKeyboardButton("🧿другие функции...", callback_data= 'other_funk_gosnom'))
-    bot.reply_to(message, f"*госномер* {gosnom}\n*зарегистрирован в субьекте РФ*: {region_codes[region]}",
+    bot.reply_to(message, f"*госномер* {gosnom}\n*зарегистрирован в субьекте РФ*: {region_codes[region]}\n{ready_reports}",
                  reply_markup=mark, parse_mode="Markdown")
 
 def check_gosnom(text):
