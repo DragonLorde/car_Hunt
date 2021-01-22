@@ -1,3 +1,4 @@
+#import getData
 from bs4 import BeautifulSoup
 import uuid
 import datetime
@@ -38,17 +39,29 @@ class doc():
             self.mlsDt = ''
 
         self.head()
+        print('1')
         self.base()
+        print('2')
         self.own()
+        print('3')
         self.mid()
+        print('4')
         self.own2()
+        print('5')
         self.dtp()
+        print('6')
         self.easit()
+        print('7')
         self.rsas()
+        print('8')
         self.wntd()
+        print('9')
         self.ogr()
+        print('10')
         self.zlgs()
+        print('11')
         self.taxx()
+        print('12')
 
 
 
@@ -100,30 +113,47 @@ class doc():
 
         header = self.soup.find('header')
         logoImg = header.find("img", {"class": "header__logo-img"})
-        if self.rsa.get('policies'):
+        if self.eas.get('diagnose_cards'):
+            if self.eas['diagnose_cards'][0].get('regNumber'):
+                if self.eas['diagnose_cards'][0]['regNumber'] != "None":
+                    print('asfasfas')
+                    self.regCr(self.eas['diagnose_cards'][0]['regNumber'])
+                    if self.carPhotoEas():
+                        logoImg['src'] = self.carPhoto()
+                else:
+                    regN = self.soup.find("div", {"class": "reg"})
+                    regN.decompose()
+            else:
+                regN = self.soup.find("div", {"class": "reg"})
+                regN.decompose()
+        elif self.rsa.get('policies'):
             if self.rsa['policies'][0].get('regNumber'):
-                self.regCr(self.rsa['policies'][0]['regNumber'])
-                if self.carPhoto():
-                    logoImg['src'] = self.carPhoto()
+                if self.rsa['policies'][0]['regNumber'] != "None":
+                    self.regCr(self.rsa['policies'][0]['regNumber'])
+                    if self.carPhoto():
+                        logoImg['src'] = self.carPhoto()
+                elif self.eas.get('diagnose_cards'):
+                    if self.eas['diagnose_cards'][0].get('regNumber'):
+                        if self.eas['diagnose_cards'][0]['regNumber'] != 'None':
+                            print('asfasfas')
+                            self.regCr(self.eas['diagnose_cards'][0]['regNumber'])
+                            if self.carPhotoEas():
+                                logoImg['src'] = self.carPhoto()
+                else:
+                    regN = self.soup.find("div", {"class": "reg"})
+                    regN.decompose()
             elif self.eas.get('diagnose_cards'):
                 if self.eas['diagnose_cards'][0].get('regNumber'):
                     if self.eas['diagnose_cards'][0]['regNumber'] != 'None':
                         print('asfasfas')
-                        self.regCr(self.eas['diagnose_cards'][0]['regNumber'])
-                        if self.carPhotoEas():
-                            logoImg['src'] = self.carPhoto()
+                        if self.eas['diagnose_cards'][0]['regNumber'] != 'None':
+                            self.regCr(self.eas['diagnose_cards'][0]['regNumber'])
+                            if self.carPhotoEas():
+                                logoImg['src'] = self.carPhoto()
                 else:
                     regN = self.soup.find("div", {"class": "reg"})
                     regN.decompose()
-        elif self.eas.get('diagnose_cards'):
-            if self.eas['diagnose_cards'][0].get('regNumber'):
-                print('asfasfas')
-                self.regCr(self.eas['diagnose_cards'][0]['regNumber'])
-                if self.carPhotoEas():
-                    logoImg['src'] = self.carPhoto()
-            else:
-                regN = self.soup.find("div", {"class": "reg"})
-                regN.decompose()
+
         else:
             regN = self.soup.find("div", {"class": "reg"})
             regN.decompose()
@@ -189,7 +219,7 @@ class doc():
         if self.rsa.get('policies'):
             if self.rsa['policies'][0].get('regNumber'):
                 reg22 = self.soup.find('span', {"class": "reg2__reg22"})
-                reg22.string = self.rsa['policies'][len(self.rsa['policies']) - 1]['regNumber']
+                reg22.string = self.rsa['policies'][0]['regNumber']
             elif self.eas.get('diagnose_cards'):
                 if self.eas['diagnose_cards'][0].get('regNumber'):
                     reg22 = self.soup.find('span', {"class": "reg2__reg22"})
@@ -211,15 +241,15 @@ class doc():
 
 
         if self.gib['history'] != None:
-            self.soup.find('span', {"class": "base__info-mark"}).string = self.gib['history']['model']
-            self.soup.find('span', {"class": "base__info-date"}).string = self.gib['history']['year']
-            self.soup.find('span', {"class": "base__info-kat"}).string = self.gib['history']['category']
-            self.soup.find('span', {"class": "base__info-kz"}).string = self.gib['history']['bodyNumber']
-            self.soup.find('span', {"class": "base__info-clr"}).string = self.gib['history']['color']
+            self.soup.find('span', {"class": "base__info-mark"}).string = str(self.gib['history']['model'])
+            self.soup.find('span', {"class": "base__info-date"}).string = str(self.gib['history']['year'])
+            self.soup.find('span', {"class": "base__info-kat"}).string = str(self.gib['history']['category'])
+            self.soup.find('span', {"class": "base__info-kz"}).string = str( self.gib['history']['bodyNumber'])
+            self.soup.find('span', {"class": "base__info-clr"}).string = str(self.gib['history']['color'])
             self.soup.find('span', {"class": "base__info-ob3"}).string = ','.join(list(str(int(round(float(self.gib['history']['engineVolume']), -2))).strip('00')))
             self.soup.find('span', {"class": "base__info-pw"}).string = self.gib['history']['powerHp']
             self.soup.find('span', {"class": "base__info-dw"}).string = str(self.gib['history']['engineNumber'])
-            self.soup.find('span', {"class": "base__info-type"}).string = self.gib['history']['type']
+            self.soup.find('span', {"class": "base__info-type"}).string = str( self.gib['history']['type'] )
         else:
             milg = self.soup.find('div', {"class": "base__info"})
             milg['style'] = 'display: none'
@@ -365,18 +395,18 @@ class doc():
                         print('no mid')
                     else:
                         sel.string = md['seal']
+
                 else:
-                    mark = mdArr[0]
-                    model = mdArr[1]
-                    mrk.string = mark
-                    mdl.string = model
-                    md = self.mid_Car(mark, model)
-                    if md['seal'] == 'no__data':
-                        print('no mid')
-                    else:
-                        sel.string = md['seal']
-
-
+                    if len(mdArr) > 2:
+                        mark = mdArr[0]
+                        model = mdArr[1]
+                        mrk.string = mark
+                        mdl.string = model
+                        md = self.mid_Car(mark, model)
+                        if md['seal'] == 'no__data':
+                            print('no mid')
+                        else:
+                            sel.string = md['seal']
         else:
             self.soup.find('div' , {"class": "mid__info"}).decompose()
             #self.soup.find('div', {"class": "mid__mile"}).decompose()
@@ -502,18 +532,19 @@ class doc():
 
 
     def own2(self):
+        print('alo')
         if self.rsa.get('policies') and self.gib['history'] != None:
             index = len(self.rsa['policies']) - 1
             gos = self.soup.find('span', {"class": "owner2__info-reg"})
             self.soup.find('span', {"class": "owner2__info-car"}).string = self.gib['history']['model']
             self.soup.find('span', {"class": "owner2__info-date"}).string = self.gib['history']['year']
-            self.soup.find('span', {"class": "owner2__info-own"}).string = self.rsa['policies'][index]['ownerName']
-            self.soup.find('span', {"class": "owner2__info-owndate"}).string = self.rsa['policies'][index]['ownerDob']
-
+            self.soup.find('span', {"class": "owner2__info-own"}).string = str(self.rsa['policies'][index]['ownerName'])
+            self.soup.find('span', {"class": "owner2__info-owndate"}).string = str(self.rsa['policies'][index]['ownerDob'])
+            print('alo')
             if self.rsa['policies'][0].get('regNumber'):
-                gos.string = self.rsa['policies'][index]['regNumber']
+                gos.string =  self.rsa['policies'][0]['regNumber']
             elif self.eas.get('diagnose_cards'):
-                gos.string = self.eas['diagnose_cards'][0]['regNumber']
+                gos.string = str( self.eas['diagnose_cards'][0]['regNumber'])
         elif self.rsa.get('policies'):
             if self.rsa['policies'][0].get('model') and self.rsa['policies'][0].get('mark'):
                 index = len(self.rsa['policies']) - 1
@@ -689,8 +720,8 @@ class doc():
 
             cmp.string = self.rsa['policies'][0]['companyName']
             vn.string = str(self.rsa['policies'][0]['vin'])
-            ow.string = self.rsa['policies'][0]['ownerName']
-            dat.string = self.rsa['policies'][0]['ownerDob']
+            ow.string = str( self.rsa['policies'][0]['ownerName'])
+            dat.string = str( self.rsa['policies'][0]['ownerDob'])
             loc.string = self.rsa['policies'][0]['location']
             cost.string = self.rsa['policies'][0]['cost']
         else:
@@ -1024,7 +1055,7 @@ def put(name):
     return 'https://bsl-show.online/push/number/' + name[1] + '.html'
 
 
-# res = doc(getData.data(), 'gay', '', 'X9F4XXEED47T11217')
+# res = doc(getData.data(), 'top', '', 'XWF0AHL48A0003761')
 # link = put(res.getHtml())
 # print(link)
 

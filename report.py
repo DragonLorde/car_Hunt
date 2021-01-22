@@ -41,11 +41,20 @@ class report:
             gosnom = message.text.replace(' ', '')
             botMes = self.bot.send_message(message.from_user.id, f'Начата обработка отчета по госномеру {gosnom}')
             self._make_rsa(requests.Session(), f'https://parser-api.com/parser/rsa_api/?key={API_KEY}&regNumber={gosnom}', botMes)
-            if 'policies' in self.rsa:
-
-                print('fadad')
-                vin = self.rsa['policies'][0]['vin']
-                print(vin)
+            if self.rsa.get('policies'):
+                if self.rsa['policies'][0]['vin'] != None:
+                    print('fadad')
+                    vin = self.rsa['policies'][0]['vin']
+                    print(vin)
+                else:
+                    easitoExist = True
+                    self._make_easito(requests.Session(),
+                                      f'https://parser-api.com/parser/eaisto_mileage_api/?key={API_KEY}&regNumber={gosnom}',
+                                      botMes)
+                    if self.easito.get('diagnose_cards'):
+                        vin = self.easito['diagnose_cards'][0]['vin']
+                    else:
+                        vin = False
             else:
                 easitoExist = True
                 self._make_easito(requests.Session(), f'https://parser-api.com/parser/eaisto_mileage_api/?key={API_KEY}&regNumber={gosnom}', botMes)
@@ -152,25 +161,42 @@ class report:
                     print(self.taxi)
                 print('========================================')
 
+                print(self.rsa['policies'])
+
+                print('some shit')
+
                 if self.rsa.get('policies'):
                     if self.rsa['policies'][0].get('regNumber'):
-                        print('dsadasdas')
-                        gosnom = self.rsa['policies'][0]['regNumber']
-                        lstGosnom = list(gosnom)
-                        region = ''
-                        for i in range(6, len(lstGosnom)):
-                            region += lstGosnom[i]
+                        if self.rsa['policies'][0]['regNumber'] != None:
+                            print('dsadasdas')
+                            gosnom = self.rsa['policies'][0]['regNumber']
+                            lstGosnom = list(gosnom)
+                            region = ''
+                            for i in range(6, len(lstGosnom)):
+                                region += lstGosnom[i]
+                                print(region)
+                            region = region_codes[region]
                             print(region)
-                        region = region_codes[region]
-                        print(region)
+                        else:
+
+                            gosnom = 'не найдено'
+                            region = ''
                     else:
+                        print('danyaPizdit')
                         gosnom = 'не найдено'
                         region = ''
                 else:
+                    print('danyaPizdit')
                     gosnom = 'не найдено'
                     region = ''
                 print('fdsadfsdaf')
 
+                print('>>>>>>>>>>>>>>>>>')
+                print(res)
+                print(message.from_user.username)
+                print(region)
+                print(vin)
+                print('>>>>>>>>>>>>>>>>>')
                 docs = doc(res, message.from_user.username, region, vin)
                 print('213456789')
                 link = put(docs.getHtml())
