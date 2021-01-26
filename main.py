@@ -427,14 +427,63 @@ def text_worker(message: types.Message):
         start_url(message)
     elif 7 <= len(text) >= 8 and check_gosnom(text):
         gosnom_start(message)
-    elif len(text) == 17:
+    elif len(text) == 17 and check_vin(text):
         vin_start(message)
     # elif len(text) == 11 or len(text) == 12 and list(text)[0] == '+':
     #     number_start(message)
     elif len(text) >= 11 and check_number(text):
         number_start(message)
+    elif check_name(message.text):
+        fssp_start(message)
     else:
         bot.send_message(message.from_user.id, 'инструкция')
+
+
+def check_vin(text:str):
+    print('nice cock')
+    text = text.upper()
+    granted =  ['A', 'E', 'I', 'O', 'U', 'Y', 'B', 'C',
+                'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M',
+                'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W',
+                'X', 'Z', '1', '2', '3', '4', '5', '6',
+                '7', '8', '9', '0']
+
+    res = True
+    for i in text:
+        if res:
+            for l in granted:
+                if i == l:
+                    break
+                if l == '0':
+                    res = False
+        else:
+            return False
+    return res
+
+
+
+def check_name(text):
+    textLst = list(text)
+    words = []
+    word = ''
+
+    for i in range(len(textLst)):
+        if textLst[i] == ' ':
+            words.append(word)
+        elif i == len(textLst) - 1:
+            word += textLst[i]
+            words.append(word)
+        else:
+            word += textLst[i]
+    # при условии что слово 1 алгоритм запишет лишь 1 букву
+
+    if len(words[0]) == 1 or len(words) > 3:
+        return False
+    elif len(words) == 2:
+        return 2
+    elif len(words) == 3:
+        return 3
+
 
 def check_number(number: str):
     number = number.replace('+', '').replace(' ', '').replace('(', '').replace(')', '').replace('-', '')
@@ -470,24 +519,49 @@ def fssp_start(message:types.Message):
 
 def fssp(message:types.Message):
     fmes = bot.send_message(message.from_user.id, 'запрос по ФСИН в обработке')
-    text = message.text.replace('$', '')
+    words = check_name(message.text)
     firstName = ''
     lastName = ''
-    swc = True
-    for i in text:
-        if i == ' ':
-            swc = False
-            continue
-        if swc:
-            firstName += i
-        else:
-            lastName += i
 
-    ress = requests.get(f'http://parser-api.com/parser/info_api/?type=TYPE_SEARCH_FIZ&regionID=-1&lastName={lastName}'
-                        f'&firstName={firstName}&key=90342864f3b769f22fd93e57aba51a49')
+    switch = True
+
+    print('ayf')
+    if words == 2:
+        for i in message.text:
+            if switch:
+                if i == ' ':
+                    switch = False
+                firstName += i
+            else:
+                lastName += i
+        ress = requests.get(
+            f'http://parser-api.com/parser/info_api/?type=TYPE_SEARCH_FIZ&regionID=-1&lastName={lastName}'
+            f'&firstName={firstName}&key=90342864f3b769f22fd93e57aba51a49')
+        print(ress.text)
+    else:
+        switch = 0
+        patronymic = ''
+        for i in message.text:
+            if i == ' ':
+                switch += 1
+                continue
+            if switch == 0:
+                firstName += i
+            elif switch == 1:
+                lastName += i
+            elif switch == 2:
+                patronymic += i
+
+        #http://parser-api.com/parser/info_api/?type=TYPE_SEARCH_FIZ&regionID=-1&lastName=%D0%98%D0%B2%D0%B0%D0%BD%D0%BE%D0%B2%D0%B8%D1%87&firstName=%D0%98%D0%B2%D0%B0%D0%BD&key=90342864f3b769f22fd93e57aba51a49&patronymic=%D0%9A%D0%B0%D0%BD%D1%86%D0%B8%D0%B1%D0%BE%D0%B2%D1%81%D0%BA%D0%B8%D0%B9
+        ress = requests.get(
+            f'http://parser-api.com/parser/info_api/?type=TYPE_SEARCH_FIZ&regionID=-1&'
+            f'lastName={lastName}&firstName={firstName}'
+            f'&key=90342864f3b769f22fd93e57aba51a49&patronymic={patronymic}')
+        print('tyt tri')
+    print('ayff')
     res = ress.json()
     print(res)
-    print(res)
+
     a = 'вот кого мне удалось найти:'
     if res['result']:
         for i in res['result']:
@@ -531,10 +605,10 @@ def vin_start(message:types.Message):
     if records:
         ready_reports = 'готовые отчеты:\n'
         for record in records:
-            ready_reports += f'{record[0]}\nот {record[1]}\n'
+            ready_reports += f'от [{record[1]}]({record[0]})\n'
     else:
         ready_reports = ''
-    bot.reply_to(message, f'vin: {vin}\n{ready_reports}', reply_markup=mark)
+    bot.reply_to(message, f'vin: {vin}\n{ready_reports}', reply_markup=mark, parse_mode="Markdown")
 
 def gosnom_start(message:types.Message):
     gosnom = message.text.replace(' ', '').upper()
@@ -551,7 +625,7 @@ def gosnom_start(message:types.Message):
     if records:
         ready_reports = 'готовые отчеты:\n'
         for record in records:
-            ready_reports += f'{record[0]}\nот {record[1]}\n'
+            ready_reports += f'от [{record[1]}]({record[0]})\n'
     else:
         ready_reports = ''
     region = ''

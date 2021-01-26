@@ -198,7 +198,7 @@ class doc():
             gb.string = 'Внимание! Участвовал в ДТП'
 
         if self.zal.get('records'):
-            pled.string = 'Внимание! Автомобиль находиться в залогах'
+            pled.string = 'Внимание! Автомобиль находиться в залоге'
         else:
             pled.string = ' '
 

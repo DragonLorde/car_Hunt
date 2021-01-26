@@ -12,6 +12,24 @@ def create_connection():
     db=DB_NAME)
     return connection
 
+def write_fssp():
+    print('write')
+
+def read_dssp(messageId, userId):
+    con = create_connection()
+    with con.cursor() as cur:
+        status = cur.execute(f'select * from fssp where (message_id = {messageId} and user_id = {userId});')
+        if status == 0:
+            cur.close()
+            con.close()
+            return False
+        else:
+            res = cur.fetchone()
+            cur.close()
+            con.close()
+            return res
+
+
 def read_reports_by_reg_number(regNumber):
     con = create_connection()
     with con.cursor() as cur:
@@ -140,3 +158,4 @@ def client_use(tgID):
 
 
 #write_user('425339450', 'Battle_in', 'evan_battle_in', 'None', '+79199371764')
+# read_dssp(123,321)
