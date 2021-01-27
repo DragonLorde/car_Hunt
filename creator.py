@@ -1,7 +1,7 @@
-#import getData
 from bs4 import BeautifulSoup
 import uuid
 import datetime
+
 import requests
 import random
 import paramiko
@@ -341,12 +341,15 @@ class doc():
 
         if self.rsa.get('policies') and self.gib['history'] != None:
             if self.rsa['policies'][0].get('model') and self.rsa['policies'][0].get('mark'):
+                print('opa')
                 if len(self.rsa['policies'][0]['model'].split()) > 1:
                     mdArr = self.rsa['policies'][0]['model'].split()
                     model = mdArr[0] + '_' + mdArr[1]
                     mark = self.rsa['policies'][0]['mark']
+                    print('alo')
                     md = self.mid_Car(mark, model)
                     if md['seal'] == 'no__data':
+                        print('gay')
                         mdArr = self.gib['history']['model'].split()
                         mark = mdArr[0]
                         model = mdArr[1]
@@ -356,8 +359,12 @@ class doc():
                         if md['seal'] == 'no__data':
                             print('no mid')
                         else:
+                            mrk.string = mdArr[0]
+                            mdl.string = mdArr[1]
                             sel.string = md['seal']
                     else:
+                        mrk.string = mdArr[0]
+                        mdl.string = mdArr[1]
                         sel.string = md['seal']
                 else:
                     model = self.rsa['policies'][0]['model']
@@ -543,7 +550,7 @@ class doc():
             if self.rsa['policies'][0].get('regNumber'):
                 gos.string = self.rsa['policies'][index]['regNumber']
             elif self.eas.get('diagnose_cards'):
-                gos.string = self.eas['diagnose_cards'][0]['regNumber']
+                gos.string = str( self.eas['diagnose_cards'][0]['regNumber'])
         elif self.rsa.get('policies'):
             if self.rsa['policies'][0].get('model') and self.rsa['policies'][0].get('mark'):
                 index = len(self.rsa['policies']) - 1
@@ -1055,8 +1062,8 @@ def put(name):
     return 'https://bsl-show.online/push/number/' + name[1] + '.html'
 
 
-# res = doc(getData.data(), 'evan_battle_in', '', 'X4XNA584X5B671519')
+# res = doc(getData.data(), 'evan_battle_in', '', 'JTMHV05J105022534')
 # link = put(res.getHtml())
 # print(link)
-
+#
 
