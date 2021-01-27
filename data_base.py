@@ -12,10 +12,12 @@ def create_connection():
     db=DB_NAME)
     return connection
 
-def write_fssp():
-    print('write')
+def write_fssp(messageID, userID, firstName, lastName, json, ):
+    con = create_connection()
+    with con.cursor() as cur:
+        cur.execute(f"insert into fssp (message_id, user_id, first_name, last_name, json) values ({messageID}, {userID}, '{firstName}', '{lastName}', '{json}');")
 
-def read_dssp(messageId, userId):
+def read_fssp(messageId, userId):
     con = create_connection()
     with con.cursor() as cur:
         status = cur.execute(f'select * from fssp where (message_id = {messageId} and user_id = {userId});')

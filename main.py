@@ -525,7 +525,6 @@ def fssp(message:types.Message):
 
     switch = True
 
-    print('ayf')
     if words == 2:
         for i in message.text:
             if switch:
@@ -534,10 +533,16 @@ def fssp(message:types.Message):
                 firstName += i
             else:
                 lastName += i
-        ress = requests.get(
+        res = requests.get(
             f'http://parser-api.com/parser/info_api/?type=TYPE_SEARCH_FIZ&regionID=-1&lastName={lastName}'
             f'&firstName={firstName}&key=90342864f3b769f22fd93e57aba51a49')
-        print(ress.text)
+
+        print(firstName)
+        print(lastName)
+        order_persons = list()
+        print(
+            f'http://parser-api.com/parser/info_api/?type=TYPE_SEARCH_FIZ&regionID=-1&lastName={lastName}'
+            f'&firstName={firstName}&key=90342864f3b769f22fd93e57aba51a49')
     else:
         switch = 0
         patronymic = ''
@@ -553,23 +558,29 @@ def fssp(message:types.Message):
                 patronymic += i
 
         #http://parser-api.com/parser/info_api/?type=TYPE_SEARCH_FIZ&regionID=-1&lastName=%D0%98%D0%B2%D0%B0%D0%BD%D0%BE%D0%B2%D0%B8%D1%87&firstName=%D0%98%D0%B2%D0%B0%D0%BD&key=90342864f3b769f22fd93e57aba51a49&patronymic=%D0%9A%D0%B0%D0%BD%D1%86%D0%B8%D0%B1%D0%BE%D0%B2%D1%81%D0%BA%D0%B8%D0%B9
-        ress = requests.get(
+        res = requests.get(
             f'http://parser-api.com/parser/info_api/?type=TYPE_SEARCH_FIZ&regionID=-1&'
             f'lastName={lastName}&firstName={firstName}'
             f'&key=90342864f3b769f22fd93e57aba51a49&patronymic={patronymic}')
         print('tyt tri')
     print('ayff')
-    res = ress.json()
-    print(res)
+    res = res.json()
 
-    a = 'вот кого мне удалось найти:'
-    if res['result']:
-        for i in res['result']:
-            a += i['debtor_name']
-            a += '\n'
-            a += i['debtor_dob']
-            a += '\n-------------\n'
+    print(firstName)
+    print(lastName)
+
+    a = 'вот кого мне удалось найти:\n'
+    if res.get('result'):
+        if res['result'] != []:
+            for i in res['result']:
+                a += i['debtor_name']
+                a += '\n'
+                a += i['debtor_dob']
+                a += '\n-------------\n'
             bot.edit_message_text(a, message.from_user.id, fmes.id)
+            print('hello')
+        else:
+            bot.edit_message_text(f'Нет информации о долгах {lastName} {firstName} ', message.from_user.id, fmes.id)
     else:
         bot.edit_message_text(f'Нет информации о долгах {lastName} {firstName} ', message.from_user.id, fmes.id)
 

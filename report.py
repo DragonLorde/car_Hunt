@@ -91,7 +91,6 @@ class report:
                             print(self.taxi)
                         print('========================================')
 
-
                         print(gosnom)
                         lstGosnom = list(gosnom)
                         print(lstGosnom)
@@ -99,7 +98,6 @@ class report:
                         for i in range(6, len(lstGosnom)):
                             region += lstGosnom[i]
                         region = region_codes[region]
-
 
                         print('bice')
                         print(region)
