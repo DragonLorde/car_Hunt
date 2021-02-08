@@ -1,5 +1,5 @@
 #telegram-token
-TG_TOKEN = '1461269098:AAEi6btb37elziBdbGzYWuqFbyMJSWM1ru0'
+TG_TOKEN = '1414409327:AAEBIRCLsPHUOlBqW9mdGz-fJBUQFyYgWgw'
 #car hunter test 1414409327:AAEBIRCLsPHUOlBqW9mdGz-fJBUQFyYgWgw
 #battle_in '1461269098:AAEi6btb37elziBdbGzYWuqFbyMJSWM1ru0'
 #from api token

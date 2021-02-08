@@ -22,6 +22,76 @@ _Пример:_\n \
 🌐 *ссылка на обьявление*\n \
 _Пример:_'
 
+#сторонние обработчики запросов =>
+
+@bot.callback_query_handler(lambda query: query.data == 'fssp')
+def query_fssp(query: types.CallbackQuery):
+    bot.answer_callback_query(query.id, 'Запрос принят в обработку')
+    message = query.message
+    words = check_name(message.text)
+    firstName = ''
+    lastName = ''
+
+    switch = True
+
+    if words == 2:
+        for i in message.text:
+            if switch:
+                if i == ' ':
+                    switch = False
+                firstName += i
+            else:
+                lastName += i
+        fssp_two(firstName, lastName, query)
+    else:
+        switch = 0
+        patronymic = ''
+        for i in message.text:
+            if i == ' ':
+                switch += 1
+                continue
+            if switch == 0:
+                firstName += i
+            elif switch == 1:
+                lastName += i
+            elif switch == 2:
+                patronymic += i
+        fssp_three(firstName, lastName, patronymic, message)
+
+def fssp_two(firstName, lastName, query):
+    res = requests.get(
+        f'http://parser-api.com/parser/info_api/?type=TYPE_SEARCH_FIZ&regionID=-1&lastName={lastName}'
+        f'&firstName={firstName}&key={API_KEY}')
+    print(f'http://parser-api.com/parser/info_api/?type=TYPE_SEARCH_FIZ&regionID=-1&lastName={lastName}'
+        f'&firstName={firstName}&key={API_KEY}')
+    json = res.json()
+    #print(json)
+    if res.json().get('error'):
+        if json['error'] == 'fssprus.ru is temporarily unavailable, please try again later':
+            bot.send_message(query.message.chat.id, 'на данный момент сервисы fssp недоступны')
+    else:
+        full_name = lastName + ' ' + firstName
+        full_name = full_name.upper()
+        names = []
+        for i in json['result']:
+            names.append(i['debtor_name'].replace(full_name, ''))
+        names = set(names)
+
+        marc = types.InlineKeyboardMarkup()
+        for i in names:
+            marc.add(types.InlineKeyboardButton(i, f'${names}'))
+        bot.edit_message_reply_markup(query.from_user.id, query.message.id, reply_markup=marc)
+
+def fssp_three(firstName, lastName, patronymic, message):
+    res = requests.get(
+        f'http://parser-api.com/parser/info_api/?type=TYPE_SEARCH_FIZ&regionID=-1&'
+        f'lastName={lastName}&firstName={firstName}'
+        f'&key={API_KEY}&patronymic={patronymic}')
+    if res.json().get('error'):
+        bot.send_message(message.id, 'возникла ошибка связанная с сервисами ФССП, попробуйте пожалуйста позже')
+    else:
+        print(res.json())
+
 #здесь обработчики запросов с сообщения вина =>
 
 @bot.callback_query_handler(lambda query: query.data == 'other_funk_vin')
@@ -31,8 +101,20 @@ def other_funk_vin(query: types.CallbackQuery):
     mark.add(types.InlineKeyboardButton('🚗Получить госномер', callback_data='gosnom_vin_query'))
     mark.add(types.InlineKeyboardButton('🏁Получить пробег', callback_data='probeg_vin'))
     mark.add(types.InlineKeyboardButton('🛃Пройденные ТО', callback_data='to_vin_query'))
+    mark.add(types.InlineKeyboardButton('🦾Пройденные тех. осмотры', callback_data='to_vin_query'))
     mark.add(types.InlineKeyboardButton('🚕Работа в такси', callback_data='taxi_vin_query'))
     mark.add(types.InlineKeyboardButton('🔥Реестр залогов', callback_data='zalogi_vin_query'))
+    mark.add(types.InlineKeyboardButton('💬Комментарии', callback_data='comment'))
+    mark.add(types.InlineKeyboardButton('⬆️Свернуть', callback_data='roll up vin'))
+
+    bot.edit_message_reply_markup(query.from_user.id, query.message.id, reply_markup=mark)
+    bot.answer_callback_query(query.id)
+
+@bot.callback_query_handler(lambda query: query.data == 'roll up vin')
+def roll_up_vin(query: types.CallbackQuery):
+    mark = types.InlineKeyboardMarkup()
+    mark.add(types.InlineKeyboardButton('📝полный отчет', callback_data='report_vin_query'))
+    mark.add(types.InlineKeyboardButton('🧿другие функции...', callback_data='other_funk_vin'))
     bot.edit_message_reply_markup(query.from_user.id, query.message.id, reply_markup=mark)
     bot.answer_callback_query(query.id)
 
@@ -198,9 +280,21 @@ def other_funk_gosnom(query: types.CallbackQuery):
     mark.add(types.InlineKeyboardButton('🚗Получить VIN', callback_data='get_vin_gosnom'))
     mark.add(types.InlineKeyboardButton('🏁Получить пробег', callback_data='probeg_gosnom'))
     mark.add(types.InlineKeyboardButton('🛃Пройденные ТО', callback_data='to_gosnom_query'))
+    mark.add(types.InlineKeyboardButton('🦾Пройденные тех. осмотры', callback_data='to_vin_query'))
     mark.add(types.InlineKeyboardButton('🚕Работа в такси', callback_data='taxi_gosnom_query'))
     mark.add(types.InlineKeyboardButton('🔥Реестр залогов', callback_data='zalogi_gosnom_query'))
+    mark.add(types.InlineKeyboardButton('💬Комментарии', callback_data='comment'))
+    mark.add(types.InlineKeyboardButton('⬆️Свернуть', callback_data='roll up gosnom'))
+
     #mark.add(types.InlineKeyboardButton('****', callback_data='tex_gosnom_query')) #'🔥**Реестр залогов**'
+    bot.edit_message_reply_markup(query.from_user.id, query.message.id, reply_markup=mark)
+    bot.answer_callback_query(query.id)
+
+@bot.callback_query_handler(lambda query: query.data == 'roll up gosnom')
+def roll_up_vin(query: types.CallbackQuery):
+    mark = types.InlineKeyboardMarkup()
+    mark.add(types.InlineKeyboardButton('📝полный отчет', callback_data='report_vin_query'))
+    mark.add(types.InlineKeyboardButton('🧿другие функции...', callback_data='other_funk_vin'))
     bot.edit_message_reply_markup(query.from_user.id, query.message.id, reply_markup=mark)
     bot.answer_callback_query(query.id)
 
@@ -434,7 +528,7 @@ def text_worker(message: types.Message):
     elif len(text) >= 11 and check_number(text):
         number_start(message)
     elif check_name(message.text):
-        fssp_start(message)
+        name(message)
     else:
         bot.send_message(message.from_user.id, 'инструкция')
 
@@ -505,7 +599,6 @@ def start_url(message: types.Message):
         executor.map(url, [message])
 
 def url(message: types.Message):
-
     ress = requests.get(
         f'http://crwl.ru/api/rest/latest/get_ad/?api_key=3c546d52e9d39dd03fb662265c6a193e&url={message.text}')
     res = ress.json()
@@ -513,76 +606,27 @@ def url(message: types.Message):
     print(res)
     bot.send_message(message.chat.id, res['phone'])
 
-def fssp_start(message:types.Message):
-    with ThreadPoolExecutor() as exect:
-        exect.map(fssp, [message])
+def name(message: types.Message):
+    marck = types.InlineKeyboardMarkup()
+    marck.add(types.InlineKeyboardButton('Проверить наличие долгов в базе ФССП', callback_data='fssp'))
+    bot.send_message(message.chat.id, upper_first_sim(message.text), reply_markup=marck)
 
-def fssp(message:types.Message):
-    fmes = bot.send_message(message.from_user.id, 'запрос по ФСИН в обработке')
-    words = check_name(message.text)
-    firstName = ''
-    lastName = ''
+def upper_first_sim(text: str):
+    upper = False
+    txtLst = list(text)
 
-    switch = True
+    for sim in range(len(txtLst)):
+        if txtLst[sim] == ' ':
+            upper = True
+            continue
+        if upper:
+            upper = False
+            txtLst[sim] = txtLst[sim].upper()
+            continue
+        if sim == 0:
+            txtLst[sim] = txtLst[sim].upper()
+    return ''.join(txtLst)
 
-    if words == 2:
-        for i in message.text:
-            if switch:
-                if i == ' ':
-                    switch = False
-                firstName += i
-            else:
-                lastName += i
-        res = requests.get(
-            f'http://parser-api.com/parser/info_api/?type=TYPE_SEARCH_FIZ&regionID=-1&lastName={lastName}'
-            f'&firstName={firstName}&key=90342864f3b769f22fd93e57aba51a49')
-
-        print(firstName)
-        print(lastName)
-        order_persons = list()
-        print(
-            f'http://parser-api.com/parser/info_api/?type=TYPE_SEARCH_FIZ&regionID=-1&lastName={lastName}'
-            f'&firstName={firstName}&key=90342864f3b769f22fd93e57aba51a49')
-    else:
-        switch = 0
-        patronymic = ''
-        for i in message.text:
-            if i == ' ':
-                switch += 1
-                continue
-            if switch == 0:
-                firstName += i
-            elif switch == 1:
-                lastName += i
-            elif switch == 2:
-                patronymic += i
-
-        #http://parser-api.com/parser/info_api/?type=TYPE_SEARCH_FIZ&regionID=-1&lastName=%D0%98%D0%B2%D0%B0%D0%BD%D0%BE%D0%B2%D0%B8%D1%87&firstName=%D0%98%D0%B2%D0%B0%D0%BD&key=90342864f3b769f22fd93e57aba51a49&patronymic=%D0%9A%D0%B0%D0%BD%D1%86%D0%B8%D0%B1%D0%BE%D0%B2%D1%81%D0%BA%D0%B8%D0%B9
-        res = requests.get(
-            f'http://parser-api.com/parser/info_api/?type=TYPE_SEARCH_FIZ&regionID=-1&'
-            f'lastName={lastName}&firstName={firstName}'
-            f'&key=90342864f3b769f22fd93e57aba51a49&patronymic={patronymic}')
-        print('tyt tri')
-    print('ayff')
-    res = res.json()
-
-    print(firstName)
-    print(lastName)
-
-    a = 'вот кого мне удалось найти:\n'
-    if res.get('result'):
-        if res['result'] != []:
-            for i in res['result']:
-                a += i['debtor_name']
-                a += '\n'
-                a += i['debtor_dob']
-                a += '\n-------------\n'
-            bot.edit_message_text(a, message.from_user.id, fmes.id)
-            print('hello')
-        else:
-            bot.edit_message_text(f'Нет информации о долгах {lastName} {firstName} ', message.from_user.id, fmes.id)
-    else:
-        bot.edit_message_text(f'Нет информации о долгах {lastName} {firstName} ', message.from_user.id, fmes.id)
 
 
 def number_start(message: types.Message):
@@ -679,6 +723,5 @@ def check_user(message: types.Message):
         print('<<<<<<<<<<')
         return True
 
-bot.polling(none_stop=True)
+bot.polling(none_stop=True, timeout=999999)
 
-bot.edit_

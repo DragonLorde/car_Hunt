@@ -37,7 +37,6 @@ class doc():
                 now = datetime.datetime.now()
                 self.mlsDate = str(now.strftime("%d-%m-%Y %H:%M"))
             self.mlsDt = ''
-
         self.head()
         self.base()
         self.own()
@@ -161,6 +160,10 @@ class doc():
 
 
     def base(self):
+        url = self.soup.find('meta', attrs={'name': 'description'})
+        url2 = self.soup.find('title')
+        url2.string = 'Отчет по vin:' + self.vin
+
         region = self.soup.find('p', {"class": "region__region2"})
         region.string = self.region
         milg = self.soup.find('span', {"class": "base__mile-km"})
@@ -168,13 +171,45 @@ class doc():
         gb = self.soup.find('span', {"class": "base__dtp"})
         pled = self.soup.find('span', {"class": "base__zlg"})
         taxi = self.soup.find('span', {"class": "base__taxi"})
+        milg_Car = self.soup.find('span', {"class": "base__milgCar"})
         rest = self.soup.find('span', {"class": "base__res"})
         srch = self.soup.find('span', {"class": "base__wntd"})
+        base__h = self.soup.find('p', {"class": "base__t"})
+
+
+        if self.eas.get('mileages'):
+            prev = self.eas['mileages'][ len(self.eas['mileages']) - 1]['mileage']
+            for props in reversed(self.eas['mileages']):
+                print(str(props['mileage']) + ' ' + str( prev ))
+                if int(props['mileage']) < int(prev):
+                    milg_Car.string = 'Внимание! У автомобиля скручен пробег 📉'
+                    url['content'] += 'Внимание! У автомобиля скручен пробег 📉'
+                    break
+                else:
+                    milg_Car.string = ' '
+                    prev = props['mileage']
+
+
+
+
+        if self.gib['accidents'] != [] and self.gib['restrictions'] != []:
+            base__h.string = '🧻 Базовая информация'
+        elif self.gib['accidents'] != []:
+            base__h.string = '🤔 Базовая информация'
+        elif self.gib['restrictions'] != []:
+            base__h.string = '🤔 Базовая информация'
+        elif len(self.taxi['records']) > 0:
+            base__h.string = '🤔 Базовая информация'
+        elif self.zal.get('records'):
+            base__h.string = '🤔 Базовая информация'
+        else:
+            base__h.string = '🔝 Базовая информация'
 
         if self.eas.get('diagnose_cards'):
             if self.eas['diagnose_cards'] != "None":
-                milg.string = str(self.eas['diagnose_cards'][0]['mileage'])
-                milD.string = str(self.eas['diagnose_cards'][0]['startDate'])
+                if self.eas['diagnose_cards'][0].get('mileage'):
+                    milg.string = str(self.eas['diagnose_cards'][0]['mileage'])
+                    milD.string = str(self.eas['diagnose_cards'][0]['startDate'])
             else:
                 milg.string = 'Не найдна информация'
                 milD.string = 'Не найдна информация'
@@ -189,26 +224,31 @@ class doc():
         if self.gib['accidents'] == []:
             gb.string = ' '
         else:
-            gb.string = 'Внимание! Участвовал в ДТП'
+            url['content'] += 'Внимание! Участвовал в ДТП 💥'
+            gb.string = 'Внимание! Участвовал в ДТП 💥'
 
         if self.zal.get('records'):
-            pled.string = 'Внимание! Автомобиль находиться в залоге'
+            pled.string = 'Внимание! Автомобиль находиться в залоге 🏦'
+            url['content'] += 'Внимание! Автомобиль находиться в залоге 🏦'
         else:
             pled.string = ' '
 
         if len(self.taxi['records']) > 0:
-            taxi.string = 'Внимание! Автомобиль работал в такси'
+            taxi.string = 'Внимание! Автомобиль работал в такси 🚕'
+            url['content'] += 'Внимание! Автомобиль работал в такси 🚕'
         else:
             taxi.string = ' '
 
         if self.gib['searches'] == []:
             srch.string = ' '
         else:
-            srch.string = 'Внимание! Автомобиль в розыске  '
+            srch.string = 'Внимание! Автомобиль в розыске 🚓 '
+            url['content'] += 'Внимание! Автомобиль в розыске 🚓 '
         if self.gib['restrictions'] == []:
             rest.string = ' '
         else:
-            rest.string = 'Внимание! На автомобиль наложены ограничения'
+            url['content'] += 'Внимание! На автомобиль наложены ограничения 🚫'
+            rest.string = 'Внимание! На автомобиль наложены ограничения 🚫'
 
         if self.rsa.get('policies'):
             if self.rsa['policies'][0].get('regNumber'):
@@ -238,7 +278,6 @@ class doc():
 
 
         if self.gib['history'] != None:
-            print('1')
             self.soup.find('span', {"class": "base__info-mark"}).string = str(self.gib['history']['model'])
             self.soup.find('span', {"class": "base__info-date"}).string = str(self.gib['history']['year'])
             self.soup.find('span', {"class": "base__info-kat"}).string = str(self.gib['history']['category'])
@@ -248,8 +287,8 @@ class doc():
             self.soup.find('span', {"class": "base__info-pw"}).string = str( self.gib['history']['powerHp'])
             self.soup.find('span', {"class": "base__info-dw"}).string = str(self.gib['history']['engineNumber'])
             self.soup.find('span', {"class": "base__info-type"}).string = str( self.gib['history']['type'] )
+            url['content'] += 'Пробег:' + milg.string + 'км по состоянию на ' + milD.string + '; vin: ' + self.vin
         else:
-            print('alo')
             milg = self.soup.find('div', {"class": "base__info"})
             milg['style'] = 'display: none'
             self.soup.findAll('div', {"class": "none"})[0]['style'] = 'display: block'
@@ -278,13 +317,12 @@ class doc():
                     ownD.string = str(dt['date']) + ' год'
             elif int(dt['date']) > 2 and int(dt['date']) <= 4:
                 ownD.string = str(dt['date']) + ' года'
-            elif int(dt['date']) <= 5:
+            elif int(dt['date']) >= 5:
                 ownD.string = str(dt['date']) + ' лет'
 
 
             for prop in self.gib['history']['ownershipPeriods']:
                 div = self.soup.new_tag('div', **{'class':'owner__info-row2 ow-ow'})
-                img = self.soup.new_tag('img', src='res/icon/planning.svg')
                 div2 = self.soup.new_tag('div')
                 p = self.soup.new_tag('p')
                 p2 = self.soup.new_tag('p')
@@ -303,11 +341,10 @@ class doc():
 
                 span4.string = str(prop['lastOperation'])
                 span3.string = str(prop['personType'])
-                div.append(img)
                 div2.append(p)
                 div2.append(p2)
                 div2.append(p3)
-                p.string = 'Дата: '
+                p.string = ' 📆 Дата: '
                 p2.string = 'Владелец: '
                 p3.string = 'Последняя операция: '
                 p3.append(span4)
@@ -334,34 +371,39 @@ class doc():
         sel = self.soup.find('span', {"class": "mid__info-seal"})
         mdArr = []
 
+
+
         if self.gib['history'] != None:
             eyr.string = self.gib['history']['year']
+
         else:
             eyr.decompose()
 
         if self.rsa.get('policies') and self.gib['history'] != None:
             if self.rsa['policies'][0].get('model') and self.rsa['policies'][0].get('mark'):
-                print('opa')
                 if len(self.rsa['policies'][0]['model'].split()) > 1:
                     mdArr = self.rsa['policies'][0]['model'].split()
                     model = mdArr[0] + '_' + mdArr[1]
                     mark = self.rsa['policies'][0]['mark']
-                    print('alo')
                     md = self.mid_Car(mark, model)
                     if md['seal'] == 'no__data':
-                        print('gay')
                         mdArr = self.gib['history']['model'].split()
-                        mark = mdArr[0]
-                        model = mdArr[1]
-                        mrk.string = mdArr[0]
-                        mdl.string = mdArr[1]
-                        md = self.mid_Car(mark, model)
-                        if md['seal'] == 'no__data':
-                            print('no mid')
-                        else:
+
+                        if len(mdArr) > 1:
                             mrk.string = mdArr[0]
                             mdl.string = mdArr[1]
-                            sel.string = md['seal']
+                            mark = mdArr[0]
+                            model = mdArr[1]
+                            md = self.mid_Car(mark, model)
+                            if md['seal'] == 'no__data':
+                                print('no mid')
+                            else:
+                                mrk.string = mdArr[0]
+                                mdl.string = mdArr[1]
+                                sel.string = md['seal']
+                        else:
+                            mrk.string = mdArr[0]
+                            mark = mdArr[0]
                     else:
                         mrk.string = mdArr[0]
                         mdl.string = mdArr[1]
@@ -399,10 +441,12 @@ class doc():
                     md = self.mid_Car(mark, model)
                     if md['seal'] == 'no__data':
                         print('no mid')
+                        mrk.string = mark
+                        mdl.string = model
                     else:
                         sel.string = md['seal']
                 else:
-                    if len(mdArr) > 2:
+                    if len(mdArr) >= 2:
                         mark = mdArr[0]
                         model = mdArr[1]
                         mrk.string = mark
@@ -410,6 +454,8 @@ class doc():
                         md = self.mid_Car(mark, model)
                         if md['seal'] == 'no__data':
                             print('no mid')
+                            mrk.string = mark
+                            mdl.string = model
                         else:
                             sel.string = md['seal']
 
@@ -425,19 +471,38 @@ class doc():
                 col = self.soup.find('div', {"class": "mid__mile-column"})
                 if len(self.eas['mileages']) == 1:
                     self.soup.find('div', {"class": "mid__mile-graph"}).decompose()
-                for prop in reversed(self.eas['mileages']):
-                    div = self.soup.new_tag('div', **{'class': 'fnd'})
-                    p = self.soup.new_tag('p')
-                    span = self.soup.new_tag('span', **{'class': 'mid__mile-km'})
-                    span2 = self.soup.new_tag('span', **{'class': 'mid__mile-date'})
-                    span.string = str(prop['mileage']) + ' КМ по состоянию на '
-                    span2.string = str( prop['date'] )
-                    p.append(span)
-                    p.append(span2)
-                    div.append(p)
-                    col.append(div)
-                    self.mls = str(prop['mileage'])
-                    self.mlsDt = prop['date']
+                text = self.eas['mileages'][0]['date'].replace('.', '')
+                text2 = self.eas['mileages'][len(self.eas['mileages']) - 1]['date'].replace('.', '')
+                date = datetime.datetime.strptime(text, '%d%m%Y').date()
+                date2 = datetime.datetime.strptime(text2, '%d%m%Y').date()
+                if date > date2:
+                    for prop in reversed(self.eas['mileages']):
+                        div = self.soup.new_tag('div', **{'class': 'fnd'})
+                        p = self.soup.new_tag('p')
+                        span = self.soup.new_tag('span', **{'class': 'mid__mile-km'})
+                        span2 = self.soup.new_tag('span', **{'class': 'mid__mile-date'})
+                        span.string = str(prop['mileage']) + ' КМ по состоянию на '
+                        span2.string = str( prop['date'] )
+                        p.append(span)
+                        p.append(span2)
+                        div.append(p)
+                        col.append(div)
+                        self.mls = str(prop['mileage'])
+                        self.mlsDt = prop['date']
+                else:
+                    for prop in self.eas['mileages']:
+                        div = self.soup.new_tag('div', **{'class': 'fnd'})
+                        p = self.soup.new_tag('p')
+                        span = self.soup.new_tag('span', **{'class': 'mid__mile-km'})
+                        span2 = self.soup.new_tag('span', **{'class': 'mid__mile-date'})
+                        span.string = str(prop['mileage']) + ' КМ по состоянию на '
+                        span2.string = str( prop['date'] )
+                        p.append(span)
+                        p.append(span2)
+                        div.append(p)
+                        col.append(div)
+                        self.mls = str(prop['mileage'])
+                        self.mlsDt = prop['date']
             elif self.gib['history'] != None:
                 if self.mile_generation['mile'] != []:
                     col = self.soup.find('div', {"class": "mid__mile-column"})
@@ -548,7 +613,7 @@ class doc():
             self.soup.find('span', {"class": "owner2__info-owndate"}).string = str(self.rsa['policies'][index]['ownerDob'])
 
             if self.rsa['policies'][0].get('regNumber'):
-                gos.string = self.rsa['policies'][index]['regNumber']
+                gos.string = self.rsa['policies'][0]['regNumber']
             elif self.eas.get('diagnose_cards'):
                 gos.string = str( self.eas['diagnose_cards'][0]['regNumber'])
         elif self.rsa.get('policies'):
@@ -561,7 +626,7 @@ class doc():
                 self.soup.find('span', {"class": "owner2__info-owndate"}).string = str( self.rsa['policies'][index]['ownerDob'] )
 
                 if self.rsa['policies'][0].get('regNumber'):
-                    gos.string = self.rsa['policies'][index]['regNumber']
+                    gos.string = self.rsa['policies'][0]['regNumber']
                 elif self.eas.get('diagnose_cards'):
                     if self.eas['diagnose_cards'][0].get('regNumber'):
                         gos.string = self.eas['diagnose_cards'][0]['regNumber']
@@ -636,7 +701,7 @@ class doc():
                 p2.string = 'Тип: '
                 p3.string = 'Регион: '
                 p4.string = 'Время: '
-                p5.string = 'Количиство ТС участвоваших в ДТП: '
+                p5.string = 'Количиство ТС: '
                 p6.string = 'Номер ТС в ДТП: '
                 p.append(span)
                 p1.append(span1)
@@ -1062,8 +1127,4 @@ def put(name):
     return 'https://bsl-show.online/push/number/' + name[1] + '.html'
 
 
-# res = doc(getData.data(), 'evan_battle_in', '', 'JTMHV05J105022534')
-# link = put(res.getHtml())
-# print(link)
-#
 
