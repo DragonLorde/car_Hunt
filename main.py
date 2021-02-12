@@ -318,15 +318,11 @@ def post_vin_gosnom_query(query: types.CallbackQuery):
     res = requests.get(f'https://parser-api.com/parser/rsa_api/?key={API_KEY}&regNumber={gosnom}')
     if res.text.find('vin') != -1:
         vin = res.json()['policies'][0]['vin']
-        print('police')
     else:
-        print('try easito')
         res = requests.get(f'https://parser-api.com/parser/eaisto_mileage_api/?key={API_KEY}&regNumber={gosnom}')
         if res.text.find('diagnose_cards') != -1:
             vin = res.json()['diagnose_cards'][0]['vin']
-            print('try easito nice')
         else:
-            print('try not nice')
             vin = ' увы не найден'
     bot.reply_to(query.message.reply_to_message, f"*vin:* {vin}", parse_mode="Markdown")
 
@@ -650,11 +646,11 @@ def number(message: types.Message):
         bot.send_message(message.from_user.id, f'отчет по номеру {res} доступен по сылке\n' + link)
 
 
-def vin_start(message:types.Message):
+def vin_start(message: types.Message):
     vin = message.text.replace(' ', '')
     mark = types.InlineKeyboardMarkup()
-    mark.add(types.InlineKeyboardButton('📝полный отчет', callback_data='report_vin_query'))
-    mark.add(types.InlineKeyboardButton('🧿другие функции...', callback_data='other_funk_vin'))
+    mark.add(types.InlineKeyboardButton('📝Полный отчет', callback_data='report_vin_query'))
+    mark.add(types.InlineKeyboardButton('🧿Другие функции...', callback_data='other_funk_vin'))
     records = read_reports_by_vin(vin)
 
     if records:
@@ -663,7 +659,7 @@ def vin_start(message:types.Message):
             ready_reports += f'от [{record[1]}]({record[0]})\n'
     else:
         ready_reports = ''
-    bot.reply_to(message, f'vin: {vin}\n{ready_reports}', reply_markup=mark, parse_mode="Markdown")
+    bot.reply_to(message, f'🚘Vin: {vin}\n{ready_reports}', reply_markup=mark, parse_mode="Markdown")
 
 def gosnom_start(message:types.Message):
     gosnom = message.text.replace(' ', '').upper()
@@ -689,7 +685,7 @@ def gosnom_start(message:types.Message):
     mark = types.InlineKeyboardMarkup()
     mark.add(types.InlineKeyboardButton("📝полный отчет", callback_data='report_gosnom_query'))
     mark.add(types.InlineKeyboardButton("🧿другие функции...", callback_data= 'other_funk_gosnom'))
-    bot.reply_to(message, f"*госномер* {gosnom}\n*зарегистрирован в субьекте РФ*: {region_codes[region]}\n{ready_reports}",
+    bot.reply_to(message, f"🚘Госномер *{gosnom}*\n🌐Субьект РФ: *{region_codes[region]}*\n{ready_reports}",
                  reply_markup=mark, parse_mode="Markdown")
 
 def check_gosnom(text):
@@ -724,4 +720,5 @@ def check_user(message: types.Message):
         return True
 
 bot.polling(none_stop=True, timeout=999999)
+
 

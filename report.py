@@ -24,15 +24,15 @@ class report:
     def _upd_status(self, message, addType: str):
         if self.status > 5:
             self.status = 5
-        res = ''
-        for i in range(self.status):
-            res += '██'
-        for i in range(5 - self.status):
-            res += '░░'
+        res = '⏱Подготавливаем отчет\n'
         if self.status < 5:
+            for i in range(self.status):
+                res += '██'
+            for i in range(5 - self.status):
+                res += '░░'
             res = f'*{res}*' + f'{self.status * 20}%\n' + addType
         else:
-            res = 'подготавливаем отчет'
+            res = '⏱Подготавливаем отчет'
         self.bot.edit_message_text(res, message.chat.id, message.id, parse_mode="Markdown")
 
     def gosnom_report(self, message):
@@ -108,7 +108,7 @@ class report:
                         print('dsasdas')
                         link = put(docs.getHtml())
                         self.bot.edit_message_text(
-                            f'Отчет по машине с vin-кодом: {vin} и госномером:{gosnom}  готов\n{link}',
+                            f'📝Отчет по машине с \nVin-кодом: {vin} \nи Госномером: {gosnom}  \n\n*Ознакомится с отчетом можно по адресу:*\n{link}',
                             botMes.chat.id, botMes.id, parse_mode="Markdown")
                         write_report(vin, gosnom, '0', link, '0', self.easito, self.gibdd, self.rsa, self.taxi,
                                      self.reestr)
@@ -200,7 +200,7 @@ class report:
                 link = put(docs.getHtml())
                 print('13456789')
                 self.bot.edit_message_text(
-                    f'Отчет по машине с vin-кодом: {vin} и госномером:{gosnom}  готов\n{link}',
+                    f'📝Отчет по машине с \nVin-кодом: {vin} \nи Госномером: {gosnom}\nбыл успешно сгенирирован\n\n*Ознакомится с отчетом можно по адресу:*\n{link}',
                     botMes.chat.id, botMes.id, parse_mode="Markdown")
                 if gosnom == 'не найдено':
                     gosnom = ''
